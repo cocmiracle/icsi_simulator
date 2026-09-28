@@ -1,0 +1,2031 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ICSI симулатор</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+:root {
+  --bg: #E9EDF0;
+  --panel: #F7F9FA;
+  --ink: #16202A;
+  --muted: #5B6B78;
+  --line: #CBD3DA;
+  --accent: #0F7C83;
+  --accent-ink: #FFFFFF;
+  --warn: #9A6400;
+  --err: #C2412D;
+  --ok: #2E7D3E;
+  --scope-bg: #0E141A;
+  --btn: #E3E8EC;
+  --btn-hover: #D5DDE3;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121A22; --panel: #1A242E; --ink: #E6EBEF; --muted: #8E9BA7; --line: #2A3642;
+    --accent: #5CC8C2; --accent-ink: #0B1A1C; --warn: #F2B84B; --err: #F0715F; --ok: #7FD18B;
+    --btn: #22303C; --btn-hover: #2C3C4A;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121A22; --panel: #1A242E; --ink: #E6EBEF; --muted: #8E9BA7; --line: #2A3642;
+  --accent: #5CC8C2; --accent-ink: #0B1A1C; --warn: #F2B84B; --err: #F0715F; --ok: #7FD18B;
+  --btn: #22303C; --btn-hover: #2C3C4A;
+}
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+*, *::before, *::after { box-sizing: inherit; }
+body {
+  margin: 0; min-height: 100%; background: var(--bg); color: var(--ink);
+  font-family: "IBM Plex Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums;
+}
+button { font: inherit; color: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- горна лента */
+.bar {
+  display: flex; align-items: center; gap: 16px; padding: 10px 20px;
+  border-bottom: 1px solid var(--line); background: var(--panel);
+}
+.bar h1 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: 0.01em; }
+.bar .where { color: var(--muted); font-size: 15px; }
+.bar .spacer { flex: 1; }
+.btn {
+  border: 1px solid var(--line); background: var(--btn); padding: 7px 14px;
+  border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.btn:hover { background: var(--btn-hover); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 500; }
+.btn.primary:hover { filter: brightness(1.07); }
+.btn[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: default; }
+
+/* ---------- меню с етапите */
+#menu { max-width: 760px; margin: 0 auto; padding: 40px 20px 60px; }
+#menu h2 { font-size: 30px; font-weight: 600; margin: 0 0 8px; line-height: 1.2; }
+#menu .lead { color: var(--muted); margin: 0 0 32px; max-width: 62ch; }
+.stages { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.stages li {
+  display: grid; grid-template-columns: 44px 1fr auto; gap: 4px 16px; align-items: center;
+  padding: 18px 0; border-bottom: 1px solid var(--line);
+}
+.stages .num { font-size: 26px; font-weight: 500; color: var(--muted); grid-row: span 2; }
+.stages .t { font-weight: 600; font-size: 17px; }
+.stages .d { color: var(--muted); grid-column: 2; max-width: 58ch; }
+.stages .act { grid-column: 3; grid-row: 1 / span 2; }
+.stages .soon { color: var(--muted); font-size: 14px; }
+.stages li.ready .num { color: var(--accent); }
+.setup { grid-column: 2 / span 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 10px; }
+.setup .lbl { color: var(--muted); font-size: 14px; }
+.setup .seg + .lbl { margin-left: 8px; }
+.setup.global { margin: -12px 0 24px; }
+.stepper { display: inline-flex; align-items: center; gap: 6px; }
+.stepper output { min-width: 2.2em; text-align: center; font-weight: 600; }
+.btn.hold:active, .btn.hold.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+/* ---------- етап */
+#stage, #stage3 { display: grid; grid-template-columns: 250px minmax(0, 1fr) 250px; gap: 0; height: calc(100vh - 52px); height: calc(100dvh - 52px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
+#stage[hidden], #stage3[hidden], #menu[hidden] { display: none; }
+.side { padding: 18px 18px; overflow-y: auto; background: var(--panel); }
+.side.left { border-right: 1px solid var(--line); }
+.side.right { border-left: 1px solid var(--line); }
+.side h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 18px 0 8px; }
+.side h3:first-child { margin-top: 0; }
+.rows { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; margin: 0; }
+.rows dt { color: var(--muted); }
+.rows dd { margin: 0; text-align: right; font-weight: 500; }
+.rows dd.ok { color: var(--ok); }
+.rows dd.bad { color: var(--err); }
+.rows dd.on { color: var(--accent); }
+.rows[hidden] { display: none; }
+.hint { color: var(--muted); font-size: 13.5px; margin: 14px 0 0; }
+.hint kbd, .keys kbd {
+  font: inherit; font-size: 12.5px; padding: 0 5px; border: 1px solid var(--line);
+  border-radius: 4px; background: var(--btn);
+}
+
+.scope-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--scope-bg); }
+.scope { position: relative; flex: 1; min-height: 0; touch-action: none; }
+.scope canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.scope canvas.rotating { cursor: crosshair; }
+.scope canvas.dragging { cursor: grabbing; }
+.toast {
+  position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
+  background: rgba(8, 12, 16, 0.88); color: #E6EBEF; padding: 10px 16px; border-radius: 8px;
+  max-width: min(90%, 560px); text-align: center; pointer-events: none; font-size: 14.5px;
+  border-left: 3px solid #F0715F;
+}
+.toast[hidden] { display: none; }
+.toast.ok { border-left-color: #7FD18B; }
+.toast.warn { border-left-color: #F2B84B; }
+.toast.info { border-left-color: #5CC8C2; }
+.result {
+  position: absolute; inset: 0; display: grid; place-items: center; background: rgba(8, 12, 16, 0.55);
+}
+.result[hidden] { display: none; }
+.result .card {
+  background: var(--panel); color: var(--ink); padding: 24px 28px; border-radius: 10px; min-width: 300px;
+  max-width: 440px; border: 1px solid var(--line);
+}
+.result h4 { margin: 0 0 10px; font-size: 20px; font-weight: 600; }
+.result h4.ok { color: var(--ok); }
+.result h4.bad { color: var(--err); }
+.result p { margin: 4px 0; }
+.result .btn { margin-top: 16px; }
+
+.toolbar {
+  display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center;
+  padding: 10px 14px; background: var(--panel); border-top: 1px solid var(--line);
+}
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg .btn { border: 0; border-radius: 0; }
+.seg .btn + .btn { border-left: 1px solid var(--line); }
+.obj { display: inline-flex; align-items: center; gap: 6px; }
+.obj output { min-width: 3.2em; text-align: center; font-weight: 600; }
+#stage .toolbar, #stage3 .toolbar { gap: 8px 10px; }
+#stage .toolbar .btn, #stage3 .toolbar .btn { padding: 7px 11px; }
+#stage3 .obj output { min-width: 4.6em; }
+
+.timer { font-size: 46px; font-weight: 600; line-height: 1; margin: 2px 0 6px; }
+.timer.warn { color: var(--warn); }
+.timer.crit { color: var(--err); }
+.timer.done { color: var(--ok); }
+.tstatus { color: var(--muted); margin: 0 0 6px; }
+.results { list-style: none; margin: 0; padding: 0; }
+.results li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.results li.bad { color: var(--err); }
+.results li.warn { color: var(--warn); }
+.results li.ok { color: var(--ok); }
+.results .empty { color: var(--muted); border: 0; }
+.lastcheck { border-left: 3px solid var(--err); background: var(--btn); border-radius: 6px; padding: 8px 10px; margin: 4px 0 12px; font-size: 14px; }
+.lastcheck.ok { border-left-color: var(--ok); }
+.lastcheck[hidden] { display: none; }
+.lastcheck b { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+.lastcheck div + div { margin-top: 4px; }
+
+/* ---------- помощ */
+.modal {
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(6, 10, 14, 0.6); padding: 16px;
+}
+.modal[hidden] { display: none; }
+.modal-card {
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink);
+  max-width: 680px; width: 100%;
+}
+.help { padding: 22px 26px 18px; max-height: 84vh; overflow-y: auto; }
+.help h2 { margin: 0 0 4px; font-size: 21px; font-weight: 600; }
+.help h3 { font-size: 15px; font-weight: 600; margin: 18px 0 6px; color: var(--accent); }
+.help ol { margin: 6px 0; padding-left: 22px; }
+.help .hand-line { color: var(--accent); font-weight: 500; margin: 4px 0 0; }
+.help li { margin: 3px 0; }
+.keys { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 6px 0; }
+.keys dt { white-space: nowrap; }
+.keys dd { margin: 0; color: var(--muted); }
+.help .foot { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+@media (max-width: 980px) {
+  #stage, #stage3 { grid-template-columns: 1fr; grid-template-rows: auto auto auto; height: auto; }
+  .scope-wrap { order: -1; }
+  .scope { height: min(78vh, 100vw); flex: none; }
+  .side.left, .side.right { border: 0; border-top: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1>ICSI симулатор</h1>
+  <span class="where" id="where">Тренировка по етапи</span>
+  <span class="spacer"></span>
+  <span class="where">версия 3.5</span>
+  <button class="btn" id="btnMenu" hidden>Етапи</button>
+  <button class="btn" id="btnHelp" hidden>Помощ</button>
+</header>
+
+<main id="menu">
+  <h2>Тренировка по етапи</h2>
+  <p class="lead">Всяка стъпка от ICSI процедурата се тренира отделно, докато стане лесна. После всичко заедно, в едно блюдо, за една минута на клетка.</p>
+  <div class="setup global">
+    <span class="lbl" id="lblHand">Ръка, за всички етапи</span>
+    <span class="seg" role="group" aria-labelledby="lblHand" id="pickHand">
+      <button class="btn" data-v="-1" aria-pressed="true">Десняк</button>
+      <button class="btn" data-v="1" aria-pressed="false">Левак</button>
+    </span>
+    <span class="lbl" id="lblMode">Режим</span>
+    <span class="seg" role="group" aria-labelledby="lblMode" id="pickMode">
+      <button class="btn" data-v="exam" aria-pressed="true" title="Лимит 60 s, таймерът брои назад">Изпит</button>
+      <button class="btn" data-v="practice" aria-pressed="false" title="Без лимит: таймерът показва за колко време се справяш">Упражнение</button>
+    </span>
+    <span class="lbl" id="rulesSrc">Правила: вградени</span>
+  </div>
+  <ol class="stages">
+    <li>
+      <span class="num">1</span>
+      <span class="t">Блюдото и изборът на ооцити</span>
+      <span class="d">Придвижване между капките и разпознаване на зрели, незрели и дегенерирани ооцити.</span>
+      <span class="act soon">Предстои</span>
+    </li>
+    <li class="ready">
+      <span class="num">2</span>
+      <span class="t">Сперматозоидът</span>
+      <span class="d">Избор по морфология, обездвижване с удар по опашката и засмукване с опашката напред (дясна ръка).</span>
+      <span class="act"><button class="btn primary" id="startStage3">Започни</button></span>
+      <div class="setup">
+        <span class="lbl" id="lblSperm">Сперматозоиди в капката</span>
+        <span class="stepper" role="group" aria-labelledby="lblSperm">
+          <button class="btn" id="spMinus" title="По-малко">−</button>
+          <output id="spOut">14</output>
+          <button class="btn" id="spPlus" title="Повече">+</button>
+        </span>
+        <span class="lbl">от 2 до 30</span>
+      </div>
+    </li>
+    <li class="ready">
+      <span class="num">3</span>
+      <span class="t">Ориентиране и хващане на ооцит</span>
+      <span class="d">Полярното телце във фокус и на 12 или 6 часа, после хващане с holding пипетата (лява ръка).</span>
+      <span class="act"><button class="btn primary" id="startStage2">Започни</button></span>
+      <div class="setup">
+        <span class="lbl" id="lblCount">Ооцити в капката</span>
+        <span class="seg" role="group" aria-labelledby="lblCount" id="pickCount">
+          <button class="btn" data-v="1" aria-pressed="true">1</button>
+          <button class="btn" data-v="2" aria-pressed="false">2</button>
+          <button class="btn" data-v="3" aria-pressed="false">3</button>
+          <button class="btn" data-v="4" aria-pressed="false">4</button>
+          <button class="btn" data-v="5" aria-pressed="false">5</button>
+          <button class="btn" data-v="6" aria-pressed="false">6</button>
+          <button class="btn" data-v="7" aria-pressed="false">7</button>
+          <button class="btn" data-v="8" aria-pressed="false">8</button>
+        </span>
+      </div>
+    </li>
+    <li>
+      <span class="num">4</span>
+      <span class="t">Инжектиране</span>
+      <span class="d">Пробиване на zona pellucida и мембраната и инжектиране на сперматозоида.</span>
+      <span class="act soon">Предстои</span>
+    </li>
+    <li>
+      <span class="num">5</span>
+      <span class="t">Цялата процедура</span>
+      <span class="d">Всички стъпки в едно ICSI блюдо, по една минута на клетка.</span>
+      <span class="act soon">Предстои</span>
+    </li>
+  </ol>
+</main>
+
+<main id="stage" hidden>
+  <aside class="side left" aria-label="Показания">
+    <dl class="rows" id="multiRows" hidden>
+      <dt>Готови клетки</dt><dd id="vDone">0 от 0</dd>
+    </dl>
+    <h3>Клетката до пипетата</h3>
+    <dl class="rows">
+      <dt>Полярно телце</dt><dd id="vClock">–</dd>
+      <dt>Телце, фокус</dt><dd id="vTilt">–</dd>
+      <dt>До пипетата</dt><dd id="vDist">–</dd>
+      <dt>Състояние</dt><dd id="vHeld">свободна</dd>
+    </dl>
+    <h3>Микроскоп</h3>
+    <dl class="rows">
+      <dt>Обектив</dt><dd id="vObj">10x</dd>
+      <dt>Holding над дъното</dt><dd id="vZ">40 µm</dd>
+      <dt id="vZiLbl">Инжекц. над дъното</dt><dd id="vZi">78 µm</dd>
+      <dt>Смукане</dt><dd id="vSuction">изкл.</dd>
+      <dt>Ръка</dt><dd id="vHand">десняк</dd>
+    </dl>
+    <p><button class="btn" id="btnHand" title="M">Превключи на левак</button></p>
+    <p class="hint">Зелено означава, че условието е изпълнено.</p>
+    <p class="hint" id="shiftHint"><kbd>Shift</kbd> + влачене винаги върти клетката.</p>
+  </aside>
+
+  <section class="scope-wrap" aria-label="Зрително поле на микроскопа">
+    <div class="scope" id="scope">
+      <canvas id="cv" aria-label="Изглед през микроскопа"></canvas>
+      <div class="toast" id="toast" role="status" hidden></div>
+      <div class="result" id="result" hidden>
+        <div class="card">
+          <h4 id="resTitle">Готово</h4>
+          <div id="resBody"></div>
+          <p class="hint" id="resAuto" hidden></p>
+          <button class="btn primary" id="resNext">Нова клетка</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar" role="toolbar" aria-label="Управление">
+      <span class="seg" role="group" aria-label="Какво прави влаченето">
+        <button class="btn" id="modePip" aria-pressed="true" title="Влачене, стрелки и E/Q: holding пипетата (лява ръка)">Holding</button>
+        <button class="btn" id="modeInj" aria-pressed="false" title="Влачене, I J K L и U/O: инжекционната пипета (дясна ръка)">Инжекционна</button>
+        <button class="btn" id="modeMove" aria-pressed="false" title="Влачене и WASD местят блюдото (предметната маса)">Блюдо</button>
+        <button class="btn" id="modeRotate" aria-pressed="false" title="Влачене върти клетката (или Shift + влачене)">Върти</button>
+      </span>
+      <span class="obj" aria-label="Обектив">
+        <button class="btn" id="objMinus" title="По-малко увеличение">−</button>
+        <output id="objOut">10x</output>
+        <button class="btn" id="objPlus" title="По-голямо увеличение">+</button>
+      </span>
+      <button class="btn hold" id="btnDown2" title="E, задръж">▼ Спусни</button>
+      <button class="btn hold" id="btnUp2" title="Q, задръж">▲ Вдигни</button>
+      <button class="btn" id="btnSuction" aria-pressed="false" title="Space">Смукане</button>
+      <button class="btn primary" id="btnCheck" title="Enter">Провери</button>
+    </div>
+  </section>
+
+  <aside class="side right" aria-label="Време и резултати">
+    <h3 id="timerTitle">Време за клетката</h3>
+    <div class="timer" id="timer">1:00.0</div>
+    <p class="tstatus" id="tstatus">Тръгва при първото действие</p>
+    <p><button class="btn" id="btnNew" title="R">Нова клетка</button></p>
+    <div class="lastcheck" id="lastCheck" role="status" hidden></div>
+    <h3>Резултати</h3>
+    <ul class="results" id="results"><li class="empty">Още няма завършени клетки</li></ul>
+    <p class="hint" id="inTime"></p>
+  </aside>
+</main>
+
+
+<main id="stage3" hidden>
+  <aside class="side left" aria-label="Показания">
+    <h3>Инжекционна пипета</h3>
+    <dl class="rows">
+      <dt>Връх над дъното</dt><dd id="w3Z">10 µm</dd>
+      <dt>Поток</dt><dd id="w3Flow">няма</dd>
+    </dl>
+    <h3>В пипетата</h3>
+    <dl class="rows">
+      <dt>Сперматозоид</dt><dd id="w3In">няма</dd>
+      <dt>Обездвижен</dt><dd id="w3Immob">–</dd>
+      <dt>Влязъл с</dt><dd id="w3Dir">–</dd>
+      <dt>Главата от върха</dt><dd id="w3Depth">–</dd>
+    </dl>
+    <h3>Микроскоп</h3>
+    <dl class="rows">
+      <dt>Обектив</dt><dd id="w3Obj">20x</dd>
+      <dt>Общо увеличение</dt><dd id="w3Mag">200x</dd>
+      <dt>Сперматозоиди</dt><dd id="w3Count">14</dd>
+      <dt>Обездвижени</dt><dd id="w3Immobs">0</dd>
+      <dt>Ръка</dt><dd id="w3Hand">десняк</dd>
+    </dl>
+    <p><button class="btn" id="btnHand3" title="M">Превключи на левак</button></p>
+    <p class="hint">Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана. Морфологията се преценява на 40x или 40x × 1,5.</p>
+    <p class="hint"><kbd>Shift</kbd> забавя движението и потока.</p>
+  </aside>
+
+  <section class="scope-wrap" aria-label="Зрително поле на микроскопа">
+    <div class="scope" id="scope3">
+      <canvas id="cv3" aria-label="Изглед през микроскопа"></canvas>
+      <div class="toast" id="toast3" role="status" hidden></div>
+      <div class="result" id="result3" hidden>
+        <div class="card">
+          <h4 id="res3Title">Готово</h4>
+          <div id="res3Body"></div>
+          <p class="hint" id="res3Auto" hidden></p>
+          <button class="btn primary" id="res3Next">Нова капка</button>
+        </div>
+      </div>
+    </div>
+    <div class="toolbar" role="toolbar" aria-label="Управление">
+      <span class="obj" aria-label="Обектив">
+        <button class="btn" id="obj3Minus" title="По-малко увеличение">−</button>
+        <output id="obj3Out">20x</output>
+        <button class="btn" id="obj3Plus" title="По-голямо увеличение">+</button>
+      </span>
+      <span class="seg" role="group" aria-label="Какво прави влаченето">
+        <button class="btn" id="mode3Pip" aria-pressed="true" title="Влачене и стрелки местят пипетата">Пипета</button>
+        <button class="btn" id="mode3Dish" aria-pressed="false" title="Влачене и WASD местят блюдото (предметната маса)">Блюдо</button>
+      </span>
+      <button class="btn hold" id="btnDown3" title="E, задръж">▼ Спусни</button>
+      <button class="btn hold" id="btnUp3" title="Q, задръж">▲ Вдигни</button>
+      <button class="btn hold" id="btnAsp3" title="Space, задръж">Засмукай</button>
+      <button class="btn hold" id="btnExp3" title="B, задръж">Изтласкай</button>
+      <button class="btn primary" id="btnCheck3" title="Enter">Провери</button>
+    </div>
+  </section>
+
+  <aside class="side right" aria-label="Време и резултати">
+    <h3 id="timerTitle3">Време</h3>
+    <div class="timer" id="timer3">1:00.0</div>
+    <p class="tstatus" id="tstatus3">Тръгва при първото действие</p>
+    <div class="lastcheck" id="lastCheck3" role="status" hidden></div>
+    <p><button class="btn" id="btnNew3" title="R">Нова капка</button></p>
+    <h3>Резултати</h3>
+    <ul class="results" id="results3"><li class="empty">Още няма завършени опити</li></ul>
+    <p class="hint" id="inTime3"></p>
+  </aside>
+</main>
+
+<div id="help3" class="modal" role="dialog" aria-modal="true" aria-labelledby="help3Title" hidden>
+  <div class="help modal-card">
+    <h2 id="help3Title">Етап 2: сперматозоидът (версия 3.5)</h2>
+    <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана, а спусната до дъното е ясна.</p>
+    <p class="hand-line" id="help3Hand"></p>
+    <h3>Задача, до 60 секунди</h3>
+    <ol>
+      <li>Избери подвижен сперматозоид с нормална глава и опашка. Кой какъв е, не пише: разпознаването е част от упражнението.</li>
+      <li>Обездвижи го: доближи го с върха 2–3 µm над дъното, над средата на опашката спусни върха до дъното („▼ Спусни“ или E) и с кратко движение прекарай пипетата напречно през опашката. Не влачи върха по дъното, докато гониш сперматозоида. Главата не се пипа.</li>
+      <li>Засмучи го <b>с опашката напред</b>: с върха на дъното доближи края на опашката и задръж „Засмукай“. Засмукването хваща само когато върхът е долу, при сперматозоида.</li>
+      <li>Остави главата 5–80 µm навътре от върха („Изтласкай“ връща назад) и натисни „Провери“.</li>
+    </ol>
+    <h3>С мишка, тъчпад или пръст</h3>
+    <dl class="keys">
+      <dt>Влачене</dt><dd>мести пипетата; в режим „Мести блюдото“ мести блюдото</dd>
+      <dt>▼ Спусни, ▲ Вдигни</dt><dd>височина на върха над дъното, докато бутонът е задържан</dd>
+      <dt>Засмукай, Изтласкай</dt><dd>действат, докато бутонът е задържан</dd>
+      <dt>Бутони − и +</dt><dd>обектив; също колело, два пръста на тъчпада или разтваряне с пръсти</dd>
+    </dl>
+    <h3>С клавиатура</h3>
+    <dl class="keys">
+      <dt><kbd>Стрелки</kbd></dt><dd>мести пипетата; с <kbd>Shift</kbd> по-бавно</dd>
+      <dt><kbd>WASD</kbd></dt><dd>мести блюдото (предметната маса)</dd>
+      <dt><kbd>E</kbd> / <kbd>Q</kbd>, задържан</dt><dd>спуска / вдига върха</dd>
+      <dt><kbd>Space</kbd>, задържан</dt><dd>засмукване (с <kbd>Shift</kbd> по-бавно)</dd>
+      <dt><kbd>B</kbd>, задържан</dt><dd>изтласкване</dd>
+      <dt><kbd>Enter</kbd></dt><dd>провери</dd>
+      <dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>обектив 4x, 10x, 20x, 40x, 40x × 1,5 (общо 40x–600x)</dd>
+      <dt><kbd>R</kbd> <kbd>M</kbd> <kbd>H</kbd></dt><dd>нова капка, десняк или левак, тази помощ</dd>
+    </dl>
+    <p class="hint">В режим „Упражнение“ няма лимит: таймерът показва за колко време се справяш.</p>
+    <div class="foot"><button class="btn primary" id="help3Close">Започни</button></div>
+  </div>
+</div>
+
+<div id="help" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+  <div class="help modal-card">
+    <h2 id="helpTitle">Етап 3: ориентиране и хващане на ооцит (версия 3.5)</h2>
+    <p>Holding пипетата се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с предметната маса (режим „Блюдо“ или WASD). Пипетата трябва да е на височината на <b>екватора на ооцита</b> (около 78 µm над дъното), иначе смукането не го хваща; извън това ниво тя е размазана.</p>
+    <p class="hand-line" id="helpHand"></p>
+    <h3>Задача, до 60 секунди</h3>
+    <ol>
+      <li>Докарай клетката близо до върха на пипетата.</li>
+      <li>Докато е свободна, я завърти така, че полярното телце да е ясно, във фокус, и срещу „12“ или „6“.
+        <span data-rot="pipette">С инжекционната пипета: докосни ооцита отстрани с върха и го плъзни по повърхността му. Движение настрани го завърта като часовник; вдигане или спускане на върха (U / O) го търкаля и телцето влиза във фокус или излиза от него.</span></li>
+      <li>Нагласи височината на пипетата на екватора на ооцита (вляво „Пипета над дъното“ става зелено) и включи смукането: клетката се придърпва и се хваща.</li>
+      <li>Натисни „Провери“. Ако нещо не е наред, пусни клетката, поправи и я хвани отново.</li>
+    </ol>
+    <div id="helpMulti" hidden>
+      <h3>Няколко ооцита</h3>
+      <p>Блюдото мести всички клетки заедно, а пипетата ги бута, ако ги срещне. Върти се клетката, която е най-близо до върха на пипетата (в синия кръг). След успешна проверка клетката получава зелен номер: изключи смукането, отмести блюдото и продължи със следващата. По 60 s на клетка.</p>
+    </div>
+    <h3>С мишка, тъчпад или пръст</h3>
+    <dl class="keys">
+      <dt>Пипета + влачене</dt><dd>мести holding пипетата</dd>
+      <dt>Блюдо + влачене</dt><dd>мести блюдото с клетките</dd>
+      <dt data-rot="pipette">Инжекционна + влачене</dt><dd data-rot="pipette">мести инжекционната пипета; с върха ѝ се търкаля ооцитът</dd>
+      <dt data-rot="button">Върти + влачене</dt><dd data-rot="button">в средата търкаля клетката като топка, по ръба я завърта в равнината</dd>
+      <dt>▼ Спусни, ▲ Вдигни</dt><dd>височина на пипетата, докато бутонът е задържан</dd>
+      <dt data-rot="button">Shift + влачене</dt><dd data-rot="button">винаги върти клетката</dd>
+      <dt>Бутони − и +</dt><dd>обектив 4x, 10x, 20x, 40x; също колело, два пръста на тъчпада или разтваряне с пръсти</dd>
+    </dl>
+    <h3>С клавиатура</h3>
+    <dl class="keys">
+      <dt><kbd>Стрелки</kbd></dt><dd>мести пипетата; с <kbd>Shift</kbd> по-бавно</dd>
+      <dt><kbd>WASD</kbd></dt><dd>мести блюдото (предметната маса)</dd>
+      <dt><kbd>E</kbd> / <kbd>Q</kbd>, задържан</dt><dd>спуска / вдига пипетата</dd>
+      <dt data-rot="pipette-keys"><kbd>I</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd></dt><dd data-rot="pipette-keys">мести инжекционната пипета (дясна ръка)</dd>
+      <dt data-rot="pipette-keys"><kbd>U</kbd> / <kbd>O</kbd>, задържан</dt><dd data-rot="pipette-keys">вдига / спуска инжекционната пипета</dd>
+      <dt data-rot="button"><kbd>U</kbd> <kbd>O</kbd></dt><dd data-rot="button">завърта клетката в равнината</dd>
+      <dt data-rot="button"><kbd>I</kbd> <kbd>K</kbd> <kbd>J</kbd> <kbd>L</kbd></dt><dd data-rot="button">търкаля нагоре, надолу, наляво, надясно</dd>
+      <dt><kbd>Space</kbd></dt><dd>смукане вкл. и изкл.</dd>
+      <dt><kbd>Enter</kbd></dt><dd>провери</dd>
+      <dt><kbd>1</kbd>–<kbd>4</kbd></dt><dd>обектив</dd>
+      <dt><kbd>R</kbd> <kbd>M</kbd> <kbd>H</kbd></dt><dd>нова клетка, десняк или левак, тази помощ</dd>
+    </dl>
+    <p class="hint">Хваната клетка не може да се мести и върти, както на живо. Таймерът спира, докато помощта е отворена. В режим „Упражнение“ няма лимит: таймерът показва за колко време се справяш.</p>
+    <div class="foot"><button class="btn primary" id="helpClose">Започни</button></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// режим за всички етапи: „Изпит“ (лимит, обратно броене) или „Упражнение“ (без лимит, брои времето)
+const GAME = { practice: false, rulesSource: "вградени" };
+/* ============================================================ константи (µm, s) */
+const ZONA_OUT = 78, ZONA_IN = 62, OOPL = 53, PB_R = 5, PB_D = 57;
+const GRAN_SIZE = [0.3, 0.8], GRAN_MAX_PX = 2.2;
+const HOLD_OUT = 50, HOLD_IN = 12;
+const DROP_R = 700;
+// по-близо до реален микроскоп: на 4x се вижда цялата капка, на 40x клетката заема около половината поле
+const OBJ = [["4x", 0.3], ["10x", 0.75], ["20x", 1.5], ["40x", 2.6]];
+const BASE_FOV = 390;
+let LIMIT = 60; const T_WARN = 20, T_CRIT = 10;
+let ORIENT_TOL_H = 0.5, TILT_TOL = 20;
+let CAPTURE = 30; const SUCTION_SPEED = 90;
+const STAGE_SPEED = 120, MAX_SPIN = Math.PI / 2, FINE = 0.2;
+const K_DAMP = -Math.log(0.02);
+const START_DIST = [190, 320], START_ANG = 95;
+const PLACE_R = 480, MIN_GAP = 25, TARGET_RANGE = ZONA_OUT * 2.3;
+// височина на holding пипетата: ооцитът лежи на дъното, екваторът му е на височина ~ радиуса му
+// как се върти ооцитът (rules.ini, [stage3] rotation): "pipette" - с инжекционната пипета, "button" - с режим „Върти“ и клавиши, "both"
+let ROT3 = "pipette";
+const INJ_TIP_R = 3.6, INJ_SPEED = 80, INJ_ROLL = 0.9;   // върхът на инжекционната пипета (µm), скорост, „сцепление“ при търкаляне
+let Z2_TOL = 15; const Z2_EQ = ZONA_OUT, Z2_START = 40, Z2_MAX = 150, Z2_SPEED = 40, Z2_BLUR = 40, PIP_SPEED2 = 80;
+const C = {
+  oil: "#C4C0AA", medium: "#D6D4C8", dropEdge: "#78766A",
+  zona: "#ECEADF", zonaEdge: "#8C8A7D", pvs: "#DEDCD0", oopl: [172, 166, 148], gran: [150, 143, 127],
+  ooplEdge: [120, 115, 100], pb: [190, 185, 166], pvsRGB: [222, 220, 208], ticks: "#2B6CB0",
+  scope: "#0E141A", target: "#2B6CB0", done: "#2E7D3E",
+};
+
+/* ============================================================ кватерниони */
+const qMul = (a, b) => [
+  a[0]*b[0] - a[1]*b[1] - a[2]*b[2] - a[3]*b[3],
+  a[0]*b[1] + a[1]*b[0] + a[2]*b[3] - a[3]*b[2],
+  a[0]*b[2] - a[1]*b[3] + a[2]*b[0] + a[3]*b[1],
+  a[0]*b[3] + a[1]*b[2] - a[2]*b[1] + a[3]*b[0]];
+const qNorm = q => { const n = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return q.map(c => c / n); };
+const qAxisAngle = (ax, ang) => {
+  const n = Math.hypot(ax[0], ax[1], ax[2]) || 1, s = Math.sin(ang / 2);
+  return [Math.cos(ang / 2), ax[0] / n * s, ax[1] / n * s, ax[2] / n * s];
+};
+const qMat = ([w, x, y, z]) => [
+  [1 - 2*(y*y + z*z), 2*(x*y - w*z), 2*(x*z + w*y)],
+  [2*(x*y + w*z), 1 - 2*(x*x + z*z), 2*(y*z - w*x)],
+  [2*(x*z - w*y), 2*(y*z + w*x), 1 - 2*(x*x + y*y)]];
+const mApply = (m, v) => [
+  m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2],
+  m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2],
+  m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2]];
+const qRandom = () => {
+  const u1 = Math.random(), u2 = Math.random(), u3 = Math.random();
+  const a = Math.sqrt(1 - u1), b = Math.sqrt(u1);
+  return [a*Math.sin(2*Math.PI*u2), a*Math.cos(2*Math.PI*u2), b*Math.sin(2*Math.PI*u3), b*Math.cos(2*Math.PI*u3)];
+};
+
+/* ============================================================ клетки */
+function makeGranules(n) {
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    let p;
+    do { p = [Math.random()*2 - 1, Math.random()*2 - 1, Math.random()*2 - 1]; } while (p[0]*p[0] + p[1]*p[1] + p[2]*p[2] > 1);
+    const r = OOPL * 0.95;
+    out.push({ p: [p[0]*r, p[1]*r, p[2]*r], size: GRAN_SIZE[0] + Math.random()*(GRAN_SIZE[1] - GRAN_SIZE[0]), shade: Math.random() });
+  }
+  return out;
+}
+function makeCell(pos, nGran) {
+  const q = qRandom();
+  return { pos, q, M: qMat(q), held: false, done: false, doneIndex: 0, granules: makeGranules(nGran) };
+}
+
+/* ============================================================ състояние */
+const S = {
+  side: -1,                 // -1: holding отляво (десняк), +1: отдясно (левак)
+  n: 1,                     // брой ооцити в капката
+  obj: 1,
+  dish: [0, 0],             // центърът на капката спрямо центъра на полето (мястото на хванатата клетка)
+  cells: [],
+  omega: [0, 0, 0], omegaCell: null,
+  suction: false,
+  session: { t: 0, lapStart: 0, state: "ready", attempts: 0 },
+  results: [],
+  mode: "pip",
+  pip: [0, 0], z: 40, holdDown: false, holdUp: false,
+  inj: [120, 0], zi: 78, injPrev: [120, 0, 78], activePip: "hold",
+  paused: true,
+};
+const tipX = () => S.pip[0] + S.side * ZONA_OUT;   // върхът на holding пипетата; хванатата клетка е в S.pip
+const zOk2 = () => Math.abs(S.z - Z2_EQ) <= Z2_TOL;       // пипетата е на екватора на ооцита
+const limit = () => LIMIT * S.n;
+const heldCell = () => S.cells.find(c => c.held) || null;
+
+function placeCells(n) {
+  if (n === 1) {
+    const d = START_DIST[0] + Math.random() * (START_DIST[1] - START_DIST[0]);
+    const a = (S.side < 0 ? 0 : Math.PI) + (Math.random()*2 - 1) * START_ANG * Math.PI / 180;
+    return [makeCell([S.pip[0] + d * Math.cos(a), S.pip[1] + d * Math.sin(a)], 900)];
+  }
+  const pts = [], tx = tipX();
+  for (let k = 0; k < 20000 && pts.length < n; k++) {
+    const r = PLACE_R * Math.sqrt(Math.random()), a = Math.random() * 2 * Math.PI;
+    const x = r * Math.cos(a), y = r * Math.sin(a);
+    if (Math.hypot(x - S.pip[0], y - S.pip[1]) < ZONA_OUT * 2.4) continue;   // не точно на върха
+    const beyond = S.side < 0 ? x <= tx : x >= tx, py = S.pip[1];
+    const bx = beyond ? x : tx, by = Math.max(py - HOLD_OUT, Math.min(y, py + HOLD_OUT));
+    if ((beyond && Math.abs(y - py) < HOLD_OUT) || Math.hypot(x - bx, y - by) < ZONA_OUT + 10) continue; // не върху пипетата
+    if (pts.some(p => Math.hypot(x - p[0], y - p[1]) < 2 * ZONA_OUT + MIN_GAP)) continue;
+    pts.push([x, y]);
+  }
+  return pts.map(p => makeCell(p, 520));
+}
+
+const injSide = () => -S.side;                  // инжекционната пипета е от другата страна (десняк: отдясно)
+const injOn = () => ROT3 !== "button";
+function newSession() {
+  S.dish = [0, 0]; S.pip = [0, 0]; S.z = Z2_START;
+  S.inj = [injSide() * (ZONA_OUT + 90), 0]; S.zi = Z2_EQ; S.injPrev = [S.inj[0], S.inj[1], S.zi];
+  S.cells = placeCells(S.n);
+  S.omega = [0, 0, 0]; S.omegaCell = null;
+  S.suction = false;
+  S.session = { t: 0, lapStart: 0, state: "ready", attempts: 0 };
+  if (S.n > 1) S.results = [];
+  S.obj = S.n > 1 ? 0 : 1;
+  showLastCheck("lastCheck", null);
+  hideResult(); ui();
+}
+
+/* ============================================================ ориентация и проверка */
+const pbOffset = c => mApply(c.M, [0, PB_D, 0]);
+function pbClock(c) {
+  const [x, y] = pbOffset(c);
+  const h = (((Math.atan2(y, x) + Math.PI / 2) / (2 * Math.PI) * 12) % 12 + 12) % 12;
+  return h < 0.05 ? 12 : h;
+}
+function pbTilt(c) { const z = pbOffset(c)[2]; return Math.asin(Math.max(-1, Math.min(1, z / PB_D))) * 180 / Math.PI; }
+function orientErr(h) { const e12 = h === 12 ? 0 : Math.min(h, 12 - h), e6 = Math.abs(h - 6); return Math.min(e12, e6); }
+const distToHold = c => Math.hypot(c.pos[0] - S.pip[0], c.pos[1] - S.pip[1]);
+
+function target() {
+  const h = heldCell();
+  if (h) return h;
+  let best = null, bd = TARGET_RANGE;
+  for (const c of S.cells) { const d = distToHold(c); if (d <= bd) { best = c; bd = d; } }
+  return best;
+}
+
+function evaluate(c) {
+  const h = pbClock(c), tilt = pbTilt(c), err = orientErr(h);
+  const fix = c.held ? ": пусни клетката, поправи и я хвани отново" : "";
+  const p = [];
+  if (c.done) p.push("Тази клетка вече е готова. Пусни я и хвани следващата.");
+  if (Math.abs(tilt) > TILT_TOL) p.push(`Полярното телце е ${tilt > 0 ? "под" : "над"} фокусната равнина (${Math.abs(tilt).toFixed(0)}°)${fix || ": търкаляй клетката"}.`);
+  else if (err > ORIENT_TOL_H) p.push(`Полярното телце е на ${h.toFixed(1)} ч, трябва да е на 12 или 6${fix}.`);
+  if (!c.held) p.push("Клетката не е хваната: докарай я до върха на пипетата и включи смукането.");
+  return { ok: p.length === 0, problems: p, err, tilt };
+}
+
+/* ============================================================ движение */
+function moveDish(dx, dy) {
+  // блюдото (капката) и свободните клетки се движат заедно; хванатата остава на пипетата
+  const nd = [S.dish[0] + dx, S.dish[1] + dy];
+  if (Math.hypot(nd[0], nd[1]) > DROP_R - 60) return;
+  S.dish = nd;
+  for (const c of S.cells) if (!c.held) { c.pos[0] += dx; c.pos[1] += dy; }
+  resolveCollisions();
+}
+function movePip2(dx, dy) {
+  // джойстикът мести holding пипетата в зрителното поле; хванатата клетка я следва
+  const lim = fovR() / scale() * 0.85;
+  let px = S.pip[0] + dx, py = S.pip[1] + dy;
+  const r = Math.hypot(px, py);
+  if (r > lim) { px *= lim / r; py *= lim / r; }
+  if (Math.hypot(px - S.dish[0], py - S.dish[1]) > DROP_R - 60) return;
+  S.pip = [px, py];
+  const h = heldCell(); if (h) h.pos = [px, py];
+  resolveCollisions();
+}
+function moveInj(dx, dy) {
+  // джойстикът на дясната ръка мести инжекционната пипета в зрителното поле
+  const lim = fovR() / scale() * 0.85;
+  let ix = S.inj[0] + dx, iy = S.inj[1] + dy;
+  const r = Math.hypot(ix, iy);
+  if (r > lim) { ix *= lim / r; iy *= lim / r; }
+  if (Math.hypot(ix - S.dish[0], iy - S.dish[1]) > DROP_R - 30) return;
+  S.inj = [ix, iy];
+}
+// височината в µm над дъното -> ос z на ооцита (навътре в екрана); екваторът е z = 0
+const hToZ = h => -(h - Z2_EQ);
+function injContact(c) {
+  const dz = hToZ(S.zi), dx = S.inj[0] - c.pos[0], dy = S.inj[1] - c.pos[1];
+  return { dx, dy, dz, d: Math.hypot(dx, dy, dz) };
+}
+function rollStep() {
+  // върхът на инжекционната пипета докосва ооцита и се плъзга по повърхността му -> ооцитът се търкаля
+  if (!injOn()) { S.injPrev = [S.inj[0], S.inj[1], S.zi]; return; }
+  const v = [S.inj[0] - S.injPrev[0], S.inj[1] - S.injPrev[1], hToZ(S.zi) - hToZ(S.injPrev[2])];
+  S.injPrev = [S.inj[0], S.inj[1], S.zi];
+  const moved = Math.hypot(v[0], v[1], v[2]);
+  for (const c of S.cells) {
+    const k = injContact(c);
+    if (k.d > ZONA_OUT + INJ_TIP_R + 2 || k.d < 1e-6) continue;       // 2 µm: върхът е „опрян“
+    const n = [k.dx / k.d, k.dy / k.d, k.dz / k.d];
+    const vn = v[0] * n[0] + v[1] * n[1] + v[2] * n[2];
+    const vt = [v[0] - vn * n[0], v[1] - vn * n[1], v[2] - vn * n[2]];
+    const vtl = Math.hypot(vt[0], vt[1], vt[2]);
+    if (moved > 0 && vtl > 0.05) {
+      if (c.held) { warnHeld(); continue; }
+      rotateCell(c, [n[1] * vt[2] - n[2] * vt[1], n[2] * vt[0] - n[0] * vt[2], n[0] * vt[1] - n[1] * vt[0]],
+                 INJ_ROLL * vtl / ZONA_OUT);
+      startTimerIfReady();
+      // върхът леко притиска ооцита, докато се плъзга: контактът се запазва (ооцитът следва върха настрани)
+      if (vn < 2 * vtl) {                          // докато върхът не се отдръпва от клетката
+        const k2 = injContact(c), d0 = ZONA_OUT + INJ_TIP_R, rxy = Math.hypot(k2.dx, k2.dy);
+        if (k2.d > d0 && rxy > 1e-6) {
+          const want = Math.sqrt(Math.max(0, d0 * d0 - k2.dz * k2.dz));   // нужно хоризонтално разстояние
+          const shift = Math.min(rxy - want, vtl);
+          if (shift > 0) { c.pos[0] += k2.dx / rxy * shift; c.pos[1] += k2.dy / rxy * shift; }
+        }
+      }
+    }
+  }
+}
+function pushFromInj(c) {
+  // ооцитът не минава през върха на инжекционната пипета (ако тя е на неговата височина)
+  if (!injOn()) return;
+  const dz = hToZ(S.zi);
+  if (Math.abs(dz) >= ZONA_OUT) return;
+  const rh = Math.sqrt(ZONA_OUT * ZONA_OUT - dz * dz) + INJ_TIP_R;
+  let dx = c.pos[0] - S.inj[0], dy = c.pos[1] - S.inj[1], d = Math.hypot(dx, dy);
+  if (d >= rh) return;
+  if (d < 1e-6) { dx = -injSide(); dy = 0; d = 1; }
+  c.pos[0] = S.inj[0] + dx / d * rh; c.pos[1] = S.inj[1] + dy / d * rh;
+}
+function pushFromPipette(c) {
+  const tx = tipX(), p = c.pos, py = S.pip[1];
+  const beyond = S.side < 0 ? p[0] <= tx : p[0] >= tx;
+  const bx = beyond ? p[0] : tx, by = Math.max(py - HOLD_OUT, Math.min(p[1], py + HOLD_OUT));
+  if (beyond && Math.abs(p[1] - py) < HOLD_OUT) { p[0] = tx - S.side * ZONA_OUT; return; }
+  let dx = p[0] - bx, dy = p[1] - by, d = Math.hypot(dx, dy);
+  if (d < ZONA_OUT) {
+    if (d < 1e-6) { dx = -S.side; dy = 0; d = 1; }
+    p[0] = bx + dx / d * ZONA_OUT; p[1] = by + dy / d * ZONA_OUT;
+  }
+}
+function keepInDrop(c) {
+  const rx = c.pos[0] - S.dish[0], ry = c.pos[1] - S.dish[1], rd = Math.hypot(rx, ry), lim = DROP_R - ZONA_OUT;
+  if (rd > lim) { c.pos[0] = S.dish[0] + rx / rd * lim; c.pos[1] = S.dish[1] + ry / rd * lim; }
+}
+function resolveCollisions() {
+  for (let it = 0; it < 3; it++) {
+    for (const c of S.cells) if (!c.held) { pushFromPipette(c); pushFromInj(c); keepInDrop(c); }
+    for (let i = 0; i < S.cells.length; i++) for (let j = i + 1; j < S.cells.length; j++) {
+      const a = S.cells[i], b = S.cells[j];
+      let dx = b.pos[0] - a.pos[0], dy = b.pos[1] - a.pos[1], d = Math.hypot(dx, dy);
+      const min = 2 * ZONA_OUT;
+      if (d >= min) continue;
+      if (d < 1e-6) { dx = 1; dy = 0; d = 1; }
+      const push = min - d, ux = dx / d, uy = dy / d;
+      if (a.held) { b.pos[0] += ux * push; b.pos[1] += uy * push; }
+      else if (b.held) { a.pos[0] -= ux * push; a.pos[1] -= uy * push; }
+      else { a.pos[0] -= ux * push / 2; a.pos[1] -= uy * push / 2; b.pos[0] += ux * push / 2; b.pos[1] += uy * push / 2; }
+    }
+  }
+}
+function rotateCell(c, axis, ang) {
+  if (!c || ang === 0) return;
+  c.q = qNorm(qMul(qAxisAngle(axis, ang), c.q)); c.M = qMat(c.q);
+}
+function suctionStep(dt) {
+  if (!S.suction) { for (const c of S.cells) c.held = false; return; }
+  const h = heldCell();
+  if (h) { h.pos = [...S.pip]; return; }
+  let best = null, bd = Infinity;
+  for (const c of S.cells) { const d = distToHold(c); if (d < bd) { best = c; bd = d; } }
+  if (!best) return;
+  if (bd < CAPTURE && !zOk2()) { zHint2(); return; }   // пипетата не е на височината на клетката
+  if (bd < 1.5) { best.held = true; best.pos = [...S.pip]; S.omega = [0, 0, 0]; return; }
+  if (bd < CAPTURE) {
+    const v = Math.min(SUCTION_SPEED * dt, bd);
+    best.pos[0] -= (best.pos[0] - S.pip[0]) / bd * v; best.pos[1] -= (best.pos[1] - S.pip[1]) / bd * v;
+  }
+}
+
+let lastZHint2 = -1e9;
+function zHint2() {
+  const now = performance.now();
+  if (now - lastZHint2 > 3000) {
+    lastZHint2 = now;
+    toast([S.z < Z2_EQ ? "Пипетата е под екватора на ооцита: вдигни я (Q)." : "Пипетата е над екватора на ооцита: спусни я (E).",
+           `Нужно е около ${Z2_EQ} µm над дъното.`], "warn", 2600);
+  }
+}
+
+/* ============================================================ вход */
+const keys = new Set();
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+let W = 0, H = 0, DPR = 1;
+function fovR() { return Math.min(W, H) * 0.47; }
+function scale() { return OBJ[S.obj][1] * (fovR() / BASE_FOV); }
+const w2s = (x, y) => [W / 2 + x * scale(), H / 2 + y * scale()];
+
+function startTimerIfReady() { if (S.session.state === "ready") S.session.state = "running"; }
+function acceptsInput() { return !S.paused && (S.session.state === "ready" || S.session.state === "running"); }
+
+// мишка, пръст, писалка; два пръста = увеличение
+const pointers = new Map();
+let drag = null, pinch = null;
+cv.addEventListener("pointerdown", e => {
+  if (!acceptsInput()) return;
+  cv.setPointerCapture(e.pointerId);
+  const r = cv.getBoundingClientRect();
+  pointers.set(e.pointerId, [e.clientX - r.left, e.clientY - r.top]);
+  if (pointers.size === 2) {
+    const [a, b] = [...pointers.values()];
+    pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) };
+    drag = null; cv.classList.remove("dragging");
+    return;
+  }
+  drag = { x: e.clientX - r.left, y: e.clientY - r.top, rotate: ROT3 !== "pipette" && (S.mode === "rotate" || e.shiftKey) };
+  cv.classList.add("dragging");
+});
+cv.addEventListener("pointermove", e => {
+  if (!pointers.has(e.pointerId)) return;
+  const r = cv.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  pointers.set(e.pointerId, [x, y]);
+  if (pinch && pointers.size >= 2) {
+    const [a, b] = [...pointers.values()];
+    const d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (d > pinch.d * 1.3) { setObj(S.obj + 1); pinch.d = d; }
+    else if (d < pinch.d / 1.3) { setObj(S.obj - 1); pinch.d = d; }
+    return;
+  }
+  if (!drag) return;
+  const dx = x - drag.x, dy = y - drag.y;
+  if (dx === 0 && dy === 0) return;
+  startTimerIfReady();
+  if (drag.rotate) {
+    const t = target();
+    if (!t) noTarget();
+    else if (t.held) warnHeld();
+    else arcball(t, drag.x, drag.y, x, y);
+  } else {
+    const s = scale();
+    if (S.mode === "pip") movePip2(dx / s, dy / s);
+    else if (S.mode === "inj" && injOn()) moveInj(dx / s, dy / s);
+    else moveDish(dx / s, dy / s);
+  }
+  drag.x = x; drag.y = y;
+});
+function endPointer(e) {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinch = null;
+  if (pointers.size === 0) { drag = null; cv.classList.remove("dragging"); }
+}
+cv.addEventListener("pointerup", endPointer);
+cv.addEventListener("pointercancel", endPointer);
+
+function arcball(c, x0, y0, x1, y1) {
+  // въображаема топка с размера на клетката: в средата търкаля, по ръба върти в равнината
+  const [cx, cy] = w2s(c.pos[0], c.pos[1]);
+  const R = Math.max(40, ZONA_OUT * scale());
+  const map = (x, y) => {
+    const a = (x - cx) / R, b = (y - cy) / R, d2 = a*a + b*b;
+    if (d2 > 1) { const d = Math.sqrt(d2); return [a / d, b / d, 0]; }
+    return [a, b, -Math.sqrt(1 - d2)];          // z навътре в екрана; горната повърхност е z < 0
+  };
+  const v0 = map(x0, y0), v1 = map(x1, y1);
+  const ax = [v0[1]*v1[2] - v0[2]*v1[1], v0[2]*v1[0] - v0[0]*v1[2], v0[0]*v1[1] - v0[1]*v1[0]];
+  const dot = Math.max(-1, Math.min(1, v0[0]*v1[0] + v0[1]*v1[1] + v0[2]*v1[2]));
+  if (Math.hypot(ax[0], ax[1], ax[2]) > 1e-9) rotateCell(c, ax, Math.acos(dot));
+}
+
+let wheelAcc = 0;
+cv.addEventListener("wheel", e => {
+  e.preventDefault();
+  wheelAcc += e.deltaY;
+  const step = e.ctrlKey ? 25 : 60;              // ctrlKey = разтваряне с два пръста на тъчпада
+  while (wheelAcc <= -step) { setObj(S.obj + 1); wheelAcc += step; }
+  while (wheelAcc >= step) { setObj(S.obj - 1); wheelAcc -= step; }
+}, { passive: false });
+function setObj(i) { S.obj = Math.max(0, Math.min(OBJ.length - 1, i)); ui(); }
+
+let lastWarn = -1e9;
+function rateLimitedToast(lines, kind) {
+  const now = performance.now();
+  if (now - lastWarn > 2500) { lastWarn = now; toast(lines, kind, 2400); }
+}
+const warnHeld = () => rateLimitedToast(["Клетката е хваната и не може да се върти.", "Изключи смукането, завърти я и я хвани отново."], "warn");
+const noTarget = () => rateLimitedToast(["Няма клетка до пипетата.", "Докарай клетка до върха ѝ, за да я въртиш."], "info");
+
+document.addEventListener("keydown", e => {
+  if (document.getElementById("stage").hidden) return;
+  const k = e.key.toLowerCase();
+  if (helpIsOpen()) { if (k === "h" || k === "escape") { closeHelp(); e.preventDefault(); } return; }
+  // Space и Enter не бива да „натискат“ и фокусирания бутон (иначе действието се удвоява)
+  if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
+  if (k === "h") { openHelp(); return; }
+  keys.add(k);
+  if (e.repeat) return;
+  if (k === "1" || k === "2" || k === "3" || k === "4") setObj(+k - 1);
+  else if (k === "r") newSession();
+  else if (k === "m") toggleHand();
+  else if (k === " ") toggleSuction();
+  else if (k === "enter") { if (!$("result").hidden) newSession(); else check(); }
+});
+document.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+window.addEventListener("blur", () => { keys.clear(); S.holdDown = S.holdUp = false; });
+
+function keyControl(dt) {
+  if (!acceptsInput()) return;
+  const has = k => keys.has(k);
+  const fine = has("shift") ? FINE : 1;
+  const px = (has("arrowright") ? 1 : 0) - (has("arrowleft") ? 1 : 0), py = (has("arrowdown") ? 1 : 0) - (has("arrowup") ? 1 : 0);
+  if (px || py) { startTimerIfReady(); const n = Math.hypot(px, py); movePip2(px / n * PIP_SPEED2 * fine * dt, py / n * PIP_SPEED2 * fine * dt); }
+  const mx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), my = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
+  if (mx || my) { startTimerIfReady(); const n = Math.hypot(mx, my); moveDish(mx / n * STAGE_SPEED * fine * dt, my / n * STAGE_SPEED * fine * dt); }
+  // бутоните ▼ / ▲ действат на избраната пипета; E/Q - holding, U/O - инжекционната
+  const btnDz = (S.holdUp ? 1 : 0) - (S.holdDown ? 1 : 0);
+  const dz = (has("q") ? 1 : 0) - (has("e") ? 1 : 0) + (S.activePip === "hold" ? btnDz : 0);
+  if (dz) { startTimerIfReady(); S.z = Math.max(0, Math.min(Z2_MAX, S.z + Math.sign(dz) * Z2_SPEED * fine * dt)); }
+  if (injOn()) {
+    const keysInj = ROT3 === "pipette";          // при "both" клавишите въртят, пипетата е с мишка
+    const ix = keysInj ? (has("l") ? 1 : 0) - (has("j") ? 1 : 0) : 0, iy = keysInj ? (has("k") ? 1 : 0) - (has("i") ? 1 : 0) : 0;
+    if (ix || iy) { startTimerIfReady(); const n = Math.hypot(ix, iy); moveInj(ix / n * INJ_SPEED * fine * dt, iy / n * INJ_SPEED * fine * dt); }
+    const dzi = (keysInj ? (has("u") ? 1 : 0) - (has("o") ? 1 : 0) : 0) + (S.activePip === "inj" ? btnDz : 0);
+    if (dzi) { startTimerIfReady(); S.zi = Math.max(0, Math.min(Z2_MAX, S.zi + Math.sign(dzi) * Z2_SPEED * fine * dt)); }
+  }
+  if (ROT3 === "pipette") { rollStep(); return; }   // ооцитът се върти само с пипетата
+  rollStep();
+  const t = target();
+  if (t !== S.omegaCell) { S.omega = [0, 0, 0]; S.omegaCell = t; }
+  const rot = (has("o") ? 1 : 0) - (has("u") ? 1 : 0);
+  const rr = (has("l") ? 1 : 0) - (has("j") ? 1 : 0);
+  const rd = (has("k") ? 1 : 0) - (has("i") ? 1 : 0);
+  if (rot || rr || rd) { startTimerIfReady(); if (!t) noTarget(); else if (t.held) warnHeld(); }
+  const k = (!t || t.held) ? 0 : fine;
+  const goal = [MAX_SPIN * k * rd, -MAX_SPIN * k * rr, MAX_SPIN * k * rot];
+  const a = 1 - Math.exp(-K_DAMP * dt);
+  S.omega = S.omega.map((w, i) => w + (goal[i] - w) * a);
+  const sp = Math.hypot(S.omega[0], S.omega[1], S.omega[2]);
+  if (sp > 1e-4 && t) rotateCell(t, S.omega, sp * dt);
+}
+
+/* ============================================================ действия */
+function toggleSuction() {
+  if (!acceptsInput()) return;
+  startTimerIfReady();
+  S.suction = !S.suction;
+  if (!S.suction) for (const c of S.cells) c.held = false;
+  ui();
+}
+function toggleHand() {
+  S.side = -S.side;
+  S.results = [];
+  newSession(); updateWhere();
+  toast([S.side < 0 ? "Десняк: holding пипетата е отляво." : "Левак: holding пипетата е отдясно."], "info", 1800);
+}
+function check() {
+  if (!acceptsInput()) return;
+  startTimerIfReady();
+  const c = heldCell();
+  if (!c) { const m = ["Няма хваната клетка: докарай клетка до върха на пипетата и включи смукането."]; toast(m, "err", 3200); showLastCheck("lastCheck", m, false); return; }
+  S.session.attempts++;
+  const ev = evaluate(c);
+  if (!ev.ok) { toast(ev.problems, "err", 3800); showLastCheck("lastCheck", ev.problems, false); ui(); return; }
+  const ss = S.session, lap = ss.t - ss.lapStart;
+  c.done = true;
+  c.doneIndex = S.cells.filter(x => x.done).length;
+  S.results.push({ n: S.results.length + 1, t: lap, ok: lap <= LIMIT, practice: GAME.practice, attempts: ss.attempts, err: ev.err, tilt: ev.tilt });
+  ss.lapStart = ss.t; ss.attempts = 0;
+  showLastCheck("lastCheck", [S.n === 1 ? "Правилно!" : `Клетка ${c.doneIndex} е готова.`], true);
+  if (S.cells.every(x => x.done)) { ss.state = "done"; showResult(true, ev); }
+  else toast([`Клетка ${c.doneIndex} е готова за ${lap.toFixed(1)} s.`, "Изключи смукането, отмести блюдото и хвани следващата."], lap <= LIMIT ? "ok" : "warn", 3200);
+  ui();
+}
+
+/* ============================================================ интерфейс */
+const $ = id => document.getElementById(id);
+// при успех: картата с резултата се показва няколко секунди и започва следващото упражнение
+let AUTO_NEXT_S = 3;
+const autoNext = {};
+function startAutoNext(key, countId, noun, fn) {
+  stopAutoNext(key);
+  let left = AUTO_NEXT_S;
+  const el = $(countId);
+  const tick = () => {
+    if (left <= 0) { stopAutoNext(key); fn(); return; }
+    el.textContent = `${noun} започва след ${left} s…`; el.hidden = false; left--;
+  };
+  tick();
+  autoNext[key] = setInterval(tick, 1000);
+}
+function stopAutoNext(key) { if (autoNext[key]) { clearInterval(autoNext[key]); autoNext[key] = 0; } }
+function showLastCheck(id, lines, ok) {        // остава в десния панел до следващата проверка
+  const el = $(id);
+  if (!lines) { el.hidden = true; return; }
+  el.className = "lastcheck" + (ok ? " ok" : "");
+  el.innerHTML = "<b>Последна проверка</b>" + lines.map(l => `<div>${l}</div>`).join("");
+  el.hidden = false;
+}
+const help = $("help");
+function helpIsOpen() { return !help.hidden; }
+function openHelp() {
+  applyRotationRule();
+  $("helpHand").textContent = S.side < 0 ? "Десняк: holding пипетата е отляво." : "Левак: holding пипетата е отдясно (огледално на десняк).";
+  S.paused = true; help.hidden = false; $("helpClose").focus();
+}
+function closeHelp() { help.hidden = true; S.paused = false; }
+help.addEventListener("click", e => { if (e.target === help) closeHelp(); });
+$("helpClose").onclick = closeHelp;
+$("btnHelp").onclick = () => ($("stage3").hidden ? openHelp() : S3open());
+$("btnMenu").onclick = () => showMenu();
+$("startStage2").onclick = () => showStage();
+$("modeMove").onclick = () => setMode("move");
+$("modePip").onclick = () => setMode("pip");
+$("modeInj").onclick = () => setMode("inj");
+function applyRotationRule() {
+  // показва само нужното според правилото за въртене
+  $("modeInj").hidden = !injOn();
+  $("modeRotate").hidden = ROT3 === "pipette";
+  $("vZiLbl").hidden = $("vZi").hidden = !injOn();
+  if ($("shiftHint")) $("shiftHint").hidden = ROT3 === "pipette";
+  document.querySelectorAll('#help [data-rot="pipette"]').forEach(el => el.hidden = !injOn());
+  document.querySelectorAll('#help [data-rot="pipette-keys"]').forEach(el => el.hidden = ROT3 !== "pipette");
+  document.querySelectorAll('#help [data-rot="button"]').forEach(el => el.hidden = ROT3 === "pipette");
+  if ((S.mode === "rotate" && ROT3 === "pipette") || (S.mode === "inj" && !injOn())) setMode("pip");
+}
+$("modeRotate").onclick = () => setMode("rotate");
+$("objMinus").onclick = () => setObj(S.obj - 1);
+$("objPlus").onclick = () => setObj(S.obj + 1);
+$("btnSuction").onclick = toggleSuction;
+function holdBtn2(el, prop) {
+  const on = e => { if (!acceptsInput()) return; e.preventDefault(); S[prop] = true; startTimerIfReady(); el.classList.add("on"); };
+  const off = () => { S[prop] = false; el.classList.remove("on"); };
+  el.addEventListener("pointerdown", on);
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, off));
+}
+holdBtn2($("btnDown2"), "holdDown");
+holdBtn2($("btnUp2"), "holdUp");
+$("btnCheck").onclick = check;
+$("btnNew").onclick = newSession;
+$("btnHand").onclick = toggleHand;
+$("resNext").onclick = newSession;
+
+// избор в менюто: ръка и брой ооцити
+function bindChoice(groupId, onPick) {
+  const btns = [...document.querySelectorAll(`#${groupId} .btn`)];
+  btns.forEach(b => b.onclick = () => {
+    btns.forEach(x => x.setAttribute("aria-pressed", x === b));
+    onPick(b.dataset.v);
+  });
+}
+bindChoice("pickHand", v => { S.side = +v; });
+bindChoice("pickMode", v => { GAME.practice = v === "practice"; });
+bindChoice("pickCount", v => { S.n = +v; });
+
+function setMode(m) {
+  S.mode = m;
+  if (m === "pip") S.activePip = "hold";
+  if (m === "inj") S.activePip = "inj";
+  $("modeInj").setAttribute("aria-pressed", m === "inj");
+  $("modePip").setAttribute("aria-pressed", m === "pip");
+  $("modeMove").setAttribute("aria-pressed", m === "move");
+  $("modeRotate").setAttribute("aria-pressed", m === "rotate");
+  cv.classList.toggle("rotating", m === "rotate");
+}
+function updateWhere() {
+  $("where").textContent = `Етап 3: ориентиране и хващане на ооцит (${S.n === 1 ? "1 ооцит" : S.n + " ооцита"}, ${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
+}
+function showMenu() {
+  $("menu").hidden = false; $("stage").hidden = true; $("stage3").hidden = true; if (window.T3) T3.paused = true;
+  stopAutoNext("s2"); stopAutoNext("s3");
+  $("btnMenu").hidden = true; $("btnHelp").hidden = true;
+  $("where").textContent = "Тренировка по етапи";
+  S.paused = true;
+}
+function showStage() {
+  $("menu").hidden = true; $("stage").hidden = false;
+  $("btnMenu").hidden = false; $("btnHelp").hidden = false;
+  S.results = [];
+  updateWhere();
+  $("multiRows").hidden = S.n === 1;
+  $("btnNew").textContent = S.n === 1 ? "Нова клетка" : "Нова капка";
+  $("resNext").textContent = S.n === 1 ? "Нова клетка" : "Нова капка";
+  $("timerTitle").textContent = S.n === 1 ? "Време за клетката" : "Време за текущата клетка";
+  $("helpMulti").hidden = S.n === 1;
+  resize(); newSession(); openHelp();
+}
+
+let toastTimer = 0;
+function toast(lines, kind, ms) {
+  const t = $("toast");
+  t.innerHTML = lines.map(l => `<div>${l}</div>`).join("");
+  t.className = "toast " + (kind === "err" ? "" : kind);
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, ms);
+}
+function showResult(ok, ev) {
+  const ss = S.session, done = S.cells.filter(c => c.done).length;
+  const good = S.results.filter(r => r.ok).length;
+  if (S.n === 1) {
+    const r = S.results[S.results.length - 1];
+    $("resTitle").textContent = ok ? `Правилно! Време: ${r.t.toFixed(1)} s` : `Времето изтече (${LIMIT} s)`;
+    $("resBody").innerHTML = ok
+      ? `<p>Отклонение на ориентацията: ${ev.err.toFixed(2)} ч (${(ev.err * 30).toFixed(0)}°)</p>
+         <p>Телце извън фокус: ${Math.abs(ev.tilt).toFixed(0)}°</p><p>Опити: ${r.attempts}</p>`
+      : `<p>Проверки: ${ss.attempts}</p>`;
+  } else {
+    $("resTitle").textContent = ok ? `Капката е готова! ${done} клетки за ${ss.t.toFixed(1)} s` : `Времето за капката изтече (${limit()} s)`;
+    $("resBody").innerHTML = ok
+      ? `<p>В срок (до ${LIMIT} s на клетка): ${good} от ${done}</p><p>Средно: ${(ss.t / Math.max(1, done)).toFixed(1)} s на клетка</p>`
+      : `<p>Готови клетки: ${done} от ${S.n}</p>`;
+  }
+  $("resTitle").className = ok ? "ok" : "bad";
+  $("result").hidden = false;
+  $("resAuto").hidden = true;
+  if (ok) startAutoNext("s2", "resAuto", S.n === 1 ? "Следващата клетка" : "Следващата капка", newSession);
+  $("resNext").focus();
+}
+function hideResult() { $("result").hidden = true; stopAutoNext("s2"); }
+
+const fmtT = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+function setRow(id, text, cls) { const el = $(id); el.textContent = text; el.className = cls || ""; }
+function ui() {
+  const t = target();
+  if (t) {
+    const h = pbClock(t), tilt = pbTilt(t);
+    setRow("vClock", `${h.toFixed(1)} ч`, orientErr(h) <= ORIENT_TOL_H ? "ok" : "");
+    setRow("vTilt", `${tilt >= 0 ? "+" : "−"}${Math.abs(tilt).toFixed(0)}°`, Math.abs(tilt) <= TILT_TOL ? "ok" : "");
+    setRow("vDist", `${distToHold(t).toFixed(0)} µm`);
+    setRow("vHeld", t.done ? "готова" : t.held ? "хваната" : "свободна", t.done || t.held ? "ok" : "");
+  } else {
+    const near = S.cells.length ? Math.min(...S.cells.map(distToHold)) : 0;
+    setRow("vClock", "–"); setRow("vTilt", "–");
+    setRow("vDist", S.cells.length ? `${near.toFixed(0)} µm` : "–");
+    setRow("vHeld", "няма до пипетата");
+  }
+  const done = S.cells.filter(c => c.done).length;
+  setRow("vDone", `${done} от ${S.n}`, done === S.n && S.n > 0 ? "ok" : "");
+  setRow("vObj", OBJ[S.obj][0]);
+  setRow("vZ", `${S.z.toFixed(0)} µm`, zOk2() ? "ok" : "");
+  setRow("vZi", `${S.zi.toFixed(0)} µm`, Math.abs(S.zi - Z2_EQ) <= Z2_TOL ? "ok" : "");
+  setRow("vSuction", S.suction ? "вкл." : "изкл.", S.suction ? "on" : "");
+  setRow("vHand", S.side < 0 ? "десняк" : "левак");
+  $("objOut").textContent = OBJ[S.obj][0];
+  $("btnSuction").setAttribute("aria-pressed", S.suction);
+  $("btnSuction").textContent = S.suction ? "Смукане: вкл." : "Смукане";
+  $("btnHand").textContent = S.side < 0 ? "Превключи на левак" : "Превключи на десняк";
+  // таймер: голям брояч за текущата клетка
+  const ss = S.session, lapLeft = LIMIT - (ss.t - ss.lapStart);
+  const tEl = $("timer");
+  $("timerTitle").textContent = GAME.practice ? "Време (упражнение)" : (S.n === 1 ? "Време за клетката" : "Време за текущата клетка");
+  if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
+  else if (GAME.practice) {                       // упражнение: брои нагоре, без лимит
+    const lap = ss.t - ss.lapStart;
+    tEl.textContent = fmtT(lap); tEl.className = "timer " + (lap > LIMIT ? "warn" : "");
+  } else {
+    tEl.textContent = lapLeft >= 0 ? fmtT(lapLeft) : `+${(-lapLeft).toFixed(1)}`;
+    tEl.className = "timer " + (lapLeft <= T_CRIT ? "crit" : lapLeft <= T_WARN ? "warn" : "");
+  }
+  const rem = Math.max(0, limit() - ss.t);
+  const total = `общо остават ${Math.floor(rem / 60)}:${String(Math.floor(rem % 60)).padStart(2, "0")}`;
+  $("tstatus").textContent = {
+    ready: "Тръгва при първото действие",
+    running: GAME.practice ? (S.n === 1 ? `Упражнение, без лимит. Проверки: ${ss.attempts}` : `Клетка ${Math.min(done + 1, S.n)} от ${S.n}, упражнение`)
+      : (S.n === 1 ? `Тече. Проверки: ${ss.attempts}` : `Клетка ${Math.min(done + 1, S.n)} от ${S.n}, ${total}`),
+    done: S.n === 1 ? "Клетката е готова" : "Капката е готова",
+    expired: "Времето изтече",
+  }[ss.state];
+  const list = $("results");
+  if (S.results.length) {
+    list.innerHTML = S.results.slice(-10).map(r =>
+      `<li class="${r.ok ? "ok" : r.practice ? "warn" : "bad"}"><span>Клетка ${r.n}</span><span>${r.t.toFixed(1)} s, опити ${r.attempts}</span></li>`).join("");
+    $("inTime").textContent = `До ${LIMIT} s: ${S.results.filter(r => r.ok).length} от ${S.results.length}`;
+  } else {
+    list.innerHTML = '<li class="empty">Още няма завършени клетки</li>';
+    $("inTime").textContent = "";
+  }
+}
+
+/* ============================================================ рисуване */
+function resize() {
+  const box = $("scope").getBoundingClientRect();
+  DPR = window.devicePixelRatio || 1;
+  W = Math.max(200, box.width); H = Math.max(200, box.height);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+if (window.ResizeObserver) new ResizeObserver(resize).observe($("scope"));
+window.addEventListener("resize", resize);
+
+const mix = (a, b, t) => `rgb(${Math.round(a[0] + (b[0] - a[0]) * t)},${Math.round(a[1] + (b[1] - a[1]) * t)},${Math.round(a[2] + (b[2] - a[2]) * t)})`;
+
+function draw() {
+  const s = scale();
+  ctx.fillStyle = C.oil; ctx.fillRect(0, 0, W, H);
+  const [dx, dy] = w2s(S.dish[0], S.dish[1]);
+  ctx.beginPath(); ctx.arc(dx, dy, DROP_R * s, 0, 2 * Math.PI);
+  ctx.fillStyle = C.medium; ctx.fill();
+  ctx.lineWidth = Math.max(2, 3 * s); ctx.strokeStyle = C.dropEdge; ctx.stroke();
+
+  for (const c of S.cells) drawOocyte(c, s);
+  drawMarks(s);
+  drawPipette(s);
+  if (injOn()) drawInjPipette(s);
+  drawTicks(s);
+  drawVignette();
+  drawScaleBar(s);
+  drawOffscreen(s);
+}
+
+function circle(x, y, r, fill, stroke, lw) {
+  ctx.beginPath(); ctx.arc(x, y, Math.max(0.5, r), 0, 2 * Math.PI);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke(); }
+}
+
+function drawOocyte(c, s) {
+  const [cx, cy] = w2s(c.pos[0], c.pos[1]);
+  const R = ZONA_OUT * s;
+  if (cx < -R || cy < -R || cx > W + R || cy > H + R) return;      // извън екрана
+  const edge = Math.max(1, 1.2 * s);
+  circle(cx, cy, R, C.zona, C.zonaEdge, edge);
+  circle(cx, cy, ZONA_IN * s, C.pvs, C.zonaEdge, edge);
+  circle(cx, cy, OOPL * s, mix(C.oopl, C.oopl, 0), null);
+  const gr = OOPL * 0.95;
+  const every = s < 0.5 ? 3 : 1;                                   // на малко увеличение - по-малко гранули
+  for (let i = 0; i < c.granules.length; i += every) {
+    const g = c.granules[i];
+    const [x, y, z] = mApply(c.M, g.p);
+    const depth = Math.abs(z) / gr;
+    const r = Math.min(GRAN_MAX_PX, Math.max(1, g.size * s));
+    ctx.fillStyle = mix(C.oopl, C.gran, (0.35 + 0.65 * g.shade) * (1 - 0.8 * depth));
+    const px = cx + x * s, py = cy + y * s;
+    if (r <= 1.2) ctx.fillRect(px - r, py - r, 2 * r, 2 * r);
+    else { ctx.beginPath(); ctx.arc(px, py, r, 0, 2 * Math.PI); ctx.fill(); }
+  }
+  circle(cx, cy, OOPL * s, null, mix(C.ooplEdge, C.ooplEdge, 0), edge);
+  // полярно телце: във фокус ясно, извън фокус бледо и по-голямо, с мек контур
+  const [x, y, z] = pbOffset(c);
+  const focus = Math.max(0, 1 - Math.abs(z) / (PB_D * 0.6));
+  const under = Math.hypot(x, y) < OOPL ? C.oopl : C.pvsRGB;
+  const r = Math.max(3, PB_R * s * (1 + 0.6 * (1 - focus)));
+  circle(cx + x * s, cy + y * s, r, mix(under, C.pb, 0.45 + 0.55 * focus),
+         mix(under, C.ooplEdge, 0.45 + 0.55 * focus), Math.max(1, edge * (1 + 1.5 * (1 - focus))));
+}
+
+function drawMarks(s) {
+  // зелен номер на готовите; тънък син кръг около клетката до пипетата (при няколко ооцита)
+  for (const c of S.cells) {
+    if (!c.done) continue;
+    const [cx, cy] = w2s(c.pos[0], c.pos[1]);
+    const px = cx + ZONA_OUT * s * 0.72, py = cy - ZONA_OUT * s * 0.72;
+    circle(px, py, 11, C.done, null);
+    ctx.fillStyle = "#FFFFFF"; ctx.font = '600 13px "IBM Plex Sans", sans-serif';
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(String(c.doneIndex), px, py + 0.5);
+  }
+  const t = target();
+  if (S.n > 1 && t && !t.held) {
+    const [cx, cy] = w2s(t.pos[0], t.pos[1]);
+    circle(cx, cy, (ZONA_OUT + 6) * s, null, C.target, 1.5);
+  }
+}
+
+function drawPipette(s) {
+  // прозрачно стъкло под Hoffman контраст: тъмни стени със светла ивица, светъл лумен,
+  // горе светъл, долу тъмен контур; по-далеч от върха все по-размазана
+  const side = S.side;
+  const [tx, ty] = w2s(tipX(), S.pip[1]);
+  const blur = Math.min(1, Math.abs(S.z - Z2_EQ) / Z2_BLUR);    // фокусът е на екватора на ооцита
+  const ro = HOLD_OUT * s, ri = HOLD_IN * s;
+  const rr = (ro - ri) / 2;
+  const wx = tx + side * rr;
+  const far = side < 0 ? -20 : W + 20;
+  const left = Math.min(far, wx), width = Math.abs(wx - far);
+  if (heldCell()) {
+    ctx.beginPath(); ctx.ellipse(tx, ty, ri * 0.9, ri * 0.9, 0, 0, 2 * Math.PI);
+    ctx.fillStyle = C.zona; ctx.fill();
+  }
+  ctx.save();
+  ctx.globalAlpha = 1 - 0.55 * blur;
+  const wall = ro - ri;
+  for (const y0 of [ty - ro, ty + ri]) {
+    ctx.fillStyle = "rgba(92,95,88,0.41)"; ctx.fillRect(left, y0, width, wall);
+    ctx.fillStyle = "rgba(238,239,231,0.49)"; ctx.fillRect(left, y0 + wall * 0.36, width, wall * 0.28);
+  }
+  ctx.fillStyle = "rgba(250,250,244,0.16)"; ctx.fillRect(left, ty - ri, width, 2 * ri);
+  ctx.beginPath();
+  ctx.ellipse(wx, ty, Math.max(1, rr), ro, 0, side < 0 ? -Math.PI / 2 : Math.PI / 2, side < 0 ? Math.PI / 2 : 3 * Math.PI / 2);
+  ctx.closePath();
+  ctx.save(); ctx.clip();
+  ctx.fillStyle = "rgba(92,95,88,0.41)"; ctx.fillRect(wx - rr - 2, ty - ro, 2 * rr + 4, ro - ri);
+  ctx.fillRect(wx - rr - 2, ty + ri, 2 * rr + 4, ro - ri);
+  ctx.restore();
+  const tOpen = Math.asin(Math.min(1, ri / ro)), edge = Math.max(2, 1.8 * s);
+  const arc = (a0, a1, col) => { ctx.beginPath(); ctx.ellipse(wx, ty, Math.max(1, rr), ro, 0, a0, a1); ctx.strokeStyle = col; ctx.lineWidth = edge; ctx.stroke(); };
+  if (side < 0) { arc(-Math.PI / 2, -tOpen, "rgba(252,252,246,0.92)"); arc(tOpen, Math.PI / 2, "rgba(78,80,74,0.92)"); }
+  else { arc(Math.PI + tOpen, 3 * Math.PI / 2, "rgba(252,252,246,0.92)"); arc(Math.PI / 2, Math.PI - tOpen, "rgba(78,80,74,0.92)"); }
+  const step = 15;
+  for (let d = rr / s; d < 3000; d += step) {
+    const x1 = tx + side * d * s, x2 = tx + side * (d + step) * s;
+    if (x1 < -20 || x1 > W + 20) break;
+    const focus = (d < 120 ? 1 : Math.max(0.2, 1 - (d - 120) / 500)) * (1 - 0.7 * blur);
+    const aOut = (80 + 175 * focus) / 255, aIn = aOut * 0.5;
+    const wOut = Math.max(2, 1.8 * s * (1 + 2 * (1 - focus))), wIn = Math.max(1, wOut / 2);
+    const line = (y, col, a, w) => { ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x1, y); ctx.strokeStyle = `rgba(${col},${a})`; ctx.lineWidth = w; ctx.stroke(); };
+    line(ty - ro, "252,252,246", aOut, wOut);
+    line(ty + ro, "78,80,74", aOut, wOut);
+    line(ty - ri, "78,80,74", aIn, wIn);
+    line(ty + ri, "252,252,246", aIn, wIn);
+  }
+  ctx.restore();
+}
+
+function drawInjPipette(s) {
+  // тънка стъклена пипета със скосен връх, от другата страна на holding пипетата; извън екватора е размазана
+  const side = injSide(), [tx, ty] = S.inj, g = ctx;
+  const blur = Math.min(1, Math.abs(S.zi - Z2_EQ) / 30);
+  const outer = d => Math.min(28, INJ_TIP_R + 0.045 * d), inner = d => Math.max(outer(d) - 1.1 - 0.02 * d, 2.2);
+  const ds = [0, 5]; let d = 5;
+  while (d < 4000) { d = d * 1.25 + 4; ds.push(d); if (Math.abs(w2s(tx + side * d, 0)[0] - W / 2) > W) break; }
+  const P = (dd, off) => w2s(tx + side * dd, ty + off);
+  const tO = ds.map(dd => P(dd, -outer(dd))), tI = ds.map(dd => P(dd, -inner(dd)));
+  const bI = ds.map(dd => P(dd, inner(dd))), bO = ds.map(dd => P(dd, outer(dd)));
+  tO[0] = P(-2.5, -outer(0) * 0.4); tI[0] = P(0, -inner(0)); bI[0] = P(5, inner(5)); bO[0] = P(5, outer(5));
+  const poly = (pts, fill) => { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.closePath(); g.fillStyle = fill; g.fill(); };
+  poly([...tO, ...tI.slice().reverse()], `rgba(92,95,88,${0.41 - 0.2 * blur})`);
+  poly([...bI, ...bO.slice().reverse()], `rgba(92,95,88,${0.41 - 0.2 * blur})`);
+  poly([...tI, ...bI.slice().reverse()], "rgba(250,250,244,0.16)");
+  const a = 1 - 0.6 * blur, w = Math.max(1, 0.8 * s) * (1 + 3 * blur);
+  const line = (pts, col, alpha, lw) => { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.strokeStyle = `rgba(${col},${alpha})`; g.lineWidth = lw; g.stroke(); };
+  line(tO, "252,252,246", a, w); line(bO, "78,80,74", a, w);
+  line(tI, "78,80,74", a / 2, Math.max(1, w / 2)); line(bI, "252,252,246", a / 2, Math.max(1, w / 2));
+  line([tO[0], bO[0]], "78,80,74", a, Math.max(1, w / 2));
+}
+function drawTicks(s) {
+  if (s < 0.5) return;                 // на 4x маркерите са твърде малки и само пречат
+  const [cx, cy] = w2s(S.pip[0], S.pip[1]);
+  const rIn = (ZONA_OUT + 3) * s, rOut = (ZONA_OUT + 18) * s;
+  ctx.strokeStyle = C.ticks; ctx.fillStyle = C.ticks; ctx.lineWidth = 2;
+  ctx.font = '600 15px "IBM Plex Sans", sans-serif'; ctx.textAlign = "center";
+  ctx.beginPath(); ctx.moveTo(cx, cy - rIn); ctx.lineTo(cx, cy - rOut); ctx.stroke();
+  ctx.textBaseline = "bottom"; ctx.fillText("12", cx, cy - rOut - 3);
+  ctx.beginPath(); ctx.moveTo(cx, cy + rIn); ctx.lineTo(cx, cy + rOut); ctx.stroke();
+  ctx.textBaseline = "top"; ctx.fillText("6", cx, cy + rOut + 3);
+}
+
+function drawVignette() {
+  const R = fovR(), cx = W / 2, cy = H / 2;
+  const g = ctx.createRadialGradient(cx, cy, R - 26, cx, cy, R);
+  g.addColorStop(0, "rgba(14,20,26,0)"); g.addColorStop(1, C.scope);
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fill();
+  ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(cx, cy, R - 0.5, 0, 2 * Math.PI, true);
+  ctx.fillStyle = C.scope; ctx.fill();
+}
+
+function drawScaleBar(s) {
+  const tgt = Math.max(70, fovR() * 0.28);
+  const opts = [10, 20, 50, 100, 200, 500];
+  let L = opts[0];
+  for (const o of opts) if (Math.abs(o * s - tgt) < Math.abs(L * s - tgt)) L = o;
+  const px = L * s, x1 = W / 2 + fovR() * 0.42, y = H / 2 + fovR() * 0.7;
+  ctx.strokeStyle = "#1E1E1E"; ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1 + px, y); ctx.stroke();
+  ctx.fillStyle = "#1E1E1E"; ctx.font = '500 14px "IBM Plex Sans", sans-serif';
+  ctx.textAlign = "center"; ctx.textBaseline = "bottom"; ctx.fillText(`${L} µm`, x1 + px / 2, y - 5);
+}
+
+function drawOffscreen(s) {
+  const R = fovR();
+  for (const c of S.cells) {
+    const [x, y] = w2s(c.pos[0], c.pos[1]);
+    const dx = x - W / 2, dy = y - H / 2, d = Math.hypot(dx, dy);
+    if (d < R - 10) continue;
+    const ux = dx / d, uy = dy / d;
+    const tip = [W / 2 + ux * (R - 12), H / 2 + uy * (R - 12)];
+    const base = [tip[0] - ux * 22, tip[1] - uy * 22];
+    ctx.beginPath();
+    ctx.moveTo(tip[0], tip[1]);
+    ctx.lineTo(base[0] - uy * 10, base[1] + ux * 10);
+    ctx.lineTo(base[0] + uy * 10, base[1] - ux * 10);
+    ctx.closePath(); ctx.fillStyle = c.done ? "#7FD18B" : "#5CC8C2"; ctx.fill();
+  }
+}
+
+/* ============================================================ цикъл */
+let last = performance.now(), uiAcc = 0;
+function frame(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (!$("stage").hidden) {
+    if (!S.paused) {
+      keyControl(dt);
+      suctionStep(dt);
+      resolveCollisions();
+      const ss = S.session;
+      if (ss.state === "running") {
+        ss.t += dt;
+        if (!GAME.practice && ss.t >= limit()) {
+          ss.t = limit(); ss.state = "expired";
+          if (S.n === 1) S.results.push({ n: S.results.length + 1, t: LIMIT, ok: false, attempts: ss.attempts });
+          showResult(false);
+        }
+      }
+    }
+    draw();
+    uiAcc += dt;
+    if (uiAcc > 0.1) { ui(); uiAcc = 0; }
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+<script>
+"use strict";
+/* ============================================================ ЕТАП 3: сперматозоидът */
+// на 60x главата на сперматозоида е достатъчно голяма за преценка на морфологията
+// 40x с допълнителен увеличител 1,5x (optovar), както при много ICSI микроскопи = общо 600x
+const OBJ3 = [...OBJ, ["40x × 1,5", 3.9]];
+const MAG3 = [40, 100, 200, 400, 600];        // общо увеличение с окуляр 10x
+const C3 = {
+  DROP_R: 450, HEAD_LEN: 4.8, HEAD_W: 3.0, MID_LEN: 4.5, TAIL_LEN: 45, TAIL_SEG: 26,
+  TAIL_AMP: 4.5, WAVE_K: 2 * Math.PI / 22, WAVE_W: 2 * Math.PI * 6, SPEED: [6, 15],   // в PVP сперматозоидите са бавни
+  NORMAL_SHARE: 0.6, IMMOTILE: 0.12, IMMOB_ZONE: [0.15, 0.85], CONTACT: 2.5,
+  INJ_TIP_R: 3.6, INJ_TAPER: 0.045, INJ_MAX_R: 28, INJ_WALL: 1.1, BEVEL: 5,
+  STAGE_SPEED: 90, PIP_SPEED: 60, ASP_RANGE: 14, FLOW: 35, HEAD_MIN: 5, HEAD_MAX: 80,
+  Z_START: 10, Z_MAX: 60, Z_SPEED: 40, Z_CONTACT: 1.0, Z_ASP: 6, Z_BLUR: 30, BOTTOM_DRAG: 80,
+  SPERM_MIN: 2, SPERM_MAX: 30, SPERM_DEFAULT: 14,
+};
+C3.BODY_LEN = C3.HEAD_LEN / 2 + C3.MID_LEN + C3.TAIL_LEN;
+const MORPH = { normal: "нормална", large: "голяма глава", small: "малка глава", amorphous: "аморфна глава",
+  tapered: "удължена (изтънена) глава", double: "двойна опашка", coiled: "навита опашка" };
+const COL3 = { oil: "#C4C0AA", pvp: "#D2D1C6", edge: "#78766A", head: "#ECEBE2", headEdge: "#464842",
+  mid: "#96968C", tail: "#5C5E58", damaged: "#78605A", target: "#2B6CB0" };
+
+const rot2 = (v, a) => [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a)];
+function segDist(p, a, b) {
+  const dx = b[0] - a[0], dy = b[1] - a[1], L2 = dx * dx + dy * dy;
+  const t = L2 === 0 ? 0 : Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / L2));
+  return Math.hypot(p[0] - (a[0] + t * dx), p[1] - (a[1] + t * dy));
+}
+function gauss() { let u = 0, v = 0; while (!u) u = Math.random(); while (!v) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const uni = (a, b) => a + Math.random() * (b - a);
+
+class Sperm {
+  constructor(pos, morph, motile) {
+    this.pos = pos; this.heading = uni(0, 2 * Math.PI); this.speed = uni(...C3.SPEED);
+    this.turn = 0; this.phase = uni(0, 2 * Math.PI); this.morph = morph;
+    this.wasMotile = motile; this.motile = motile; this.immobilized = false; this.damaged = false;
+    this.kinkS = null; this.kinkDir = 1;
+    this.inside = false; this.uHead = 0; this.dirIn = 1;          // dirIn +1: опашката е по-навътре
+    this.amorph = Array.from({ length: 10 }, () => uni(0.7, 1.3));
+  }
+  headScale() { return { large: [1.5, 1.45], small: [0.62, 0.65], tapered: [1.35, 0.55] }[this.morph] || [1, 1]; }
+  tailLen() { return C3.TAIL_LEN * (this.morph === "coiled" ? 0.55 : 1); }
+  body(t, extra = 0, lateral = 0) {
+    const b = [-Math.cos(this.heading), -Math.sin(this.heading)];
+    const hl = C3.HEAD_LEN * this.headScale()[0];
+    const neck = [this.pos[0] + b[0] * hl / 2, this.pos[1] + b[1] * hl / 2];
+    const mid = [neck[0] + b[0] * C3.MID_LEN, neck[1] + b[1] * C3.MID_LEN];
+    const pts = [mid], L = this.tailLen(), step = L / C3.TAIL_SEG;
+    let d = b, x = mid[0], y = mid[1];
+    for (let i = 1; i <= C3.TAIL_SEG; i++) {
+      const s = i * step;
+      if (this.morph === "coiled" && s > L * 0.35) d = rot2(d, 0.55);
+      if (this.kinkS !== null && Math.abs(s - this.kinkS) < step / 2 + 1e-6) d = rot2(d, 0.6 * this.kinkDir);
+      x += d[0] * step; y += d[1] * step;
+      const lat = (this.motile && this.morph !== "coiled")
+        ? C3.TAIL_AMP * (s / L) * Math.sin(C3.WAVE_K * s - C3.WAVE_W * t + this.phase + extra) : 0;
+      const off = lat + lateral * s / L;
+      pts.push([x - d[1] * off, y + d[0] * off]);
+    }
+    return { neck, pts };
+  }
+  tailEnd(t) { const p = this.body(t).pts; return p[p.length - 1]; }
+  updateFree(dt) {
+    if (!this.motile || this.inside) return;
+    this.turn = Math.max(-0.8, Math.min(0.8, this.turn + gauss() * 1.2 * dt));
+    this.heading += this.turn * dt;
+    const [x, y] = this.pos;
+    if (Math.hypot(x, y) > C3.DROP_R - 40) {
+      const toC = Math.atan2(-y, -x);
+      const diff = ((toC - this.heading + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
+      this.heading += Math.max(-2, Math.min(2, diff)) * dt * 2;
+    }
+    this.pos = [x + Math.cos(this.heading) * this.speed * dt, y + Math.sin(this.heading) * this.speed * dt];
+  }
+}
+
+const T3 = {
+  n: C3.SPERM_DEFAULT, obj: 2, cam: [0, 0], off: [0, 0], prevTip: [0, 0],
+  z: 10, mode: "pip", bottomDrag: 0, flow: 0, holdAsp: false, holdExp: false, holdDown: false, holdUp: false,
+  sperm: [], t: 0, session: { t: 0, state: "ready", attempts: 0 }, results: [], paused: true,
+};
+window.T3 = T3;
+const side3 = () => (S.side < 0 ? 1 : -1);          // десняк: инжекционната пипета е отдясно
+const tip3 = () => [T3.cam[0] + T3.off[0], T3.cam[1] + T3.off[1]];
+const axisPoint = u => { const t = tip3(); return [t[0] + side3() * u, t[1]]; };
+
+function makeSperm(n) {
+  const out = [], abn = ["large", "small", "amorphous", "tapered", "double", "coiled"];
+  const tp = tip3();
+  for (let i = 0; i < n; i++) {
+    let p;
+    for (let k = 0; k < 200; k++) {
+      const r = (C3.DROP_R - 70) * Math.sqrt(Math.random()), a = uni(0, 2 * Math.PI);
+      p = [r * Math.cos(a), r * Math.sin(a)];
+      if (Math.hypot(p[0] - tp[0], p[1] - tp[1]) > 90) break;
+    }
+    const morph = (i < 4 || Math.random() < C3.NORMAL_SHARE) ? "normal" : abn[Math.floor(Math.random() * abn.length)];
+    const motile = !(i >= 4 && Math.random() < C3.IMMOTILE);
+    out.push(new Sperm(p, morph, motile));
+  }
+  for (let i = out.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [out[i], out[j]] = [out[j], out[i]]; }
+  return out;
+}
+function newDrop3() {
+  T3.cam = [0, 0]; T3.off = [0, 0]; T3.prevTip = tip3();
+  T3.sperm = makeSperm(T3.n); T3.t = 0;
+  T3.z = C3.Z_START; T3.flow = 0;
+  T3.session = { t: 0, state: "ready", attempts: 0 };
+  T3.obj = 2;
+  showLastCheck("lastCheck3", null);
+  stopAutoNext("s3");
+  $("result3").hidden = true;
+  ui3();
+}
+const insideSperm = () => T3.sperm.find(s => s.inside) || null;
+function nearestFree(maxD = 70) {
+  const tp = tip3(); let best = null, bd = maxD;
+  for (const s of T3.sperm) {
+    if (s.inside) continue;
+    const pts = s.body(T3.t).pts;
+    let d = Math.hypot(s.pos[0] - tp[0], s.pos[1] - tp[1]);
+    for (let i = 0; i < pts.length; i += 4) d = Math.min(d, Math.hypot(pts[i][0] - tp[0], pts[i][1] - tp[1]));
+    if (d < bd) { best = s; bd = d; }
+  }
+  return best;
+}
+let events3 = [];
+function checkPress(a, b) {
+  for (const s of T3.sperm) {
+    if (s.inside || s.damaged) continue;
+    const { neck, pts } = s.body(T3.t);
+    if (segDist(s.pos, a, b) < C3.CONTACT + C3.HEAD_W / 2 * s.headScale()[1] ||
+        segDist(neck, a, b) < C3.CONTACT || segDist(pts[0], a, b) < C3.CONTACT) {
+      s.damaged = true; s.motile = false;
+      events3.push([["Върхът удари главата или средната част:", "сперматозоидът е повреден. Избери друг."], "err"]);
+      continue;
+    }
+    if (s.immobilized || !s.motile) continue;
+    for (let i = 1; i < pts.length; i++) {
+      if (segDist(pts[i], a, b) < C3.CONTACT) {
+        const f = i / (pts.length - 1);
+        if (f >= C3.IMMOB_ZONE[0] && f <= C3.IMMOB_ZONE[1]) {
+          s.immobilized = true; s.motile = false; s.kinkS = f * s.tailLen(); s.kinkDir = Math.random() < 0.5 ? -1 : 1;
+          events3.push([["Сперматозоидът е обездвижен!", "Сега го засмучи с опашката напред."], "ok"]);
+        } else if (f > C3.IMMOB_ZONE[1]) {
+          events3.push([["Твърде близо до края на опашката:", "притисни по-близо до средата ѝ."], "warn"]);
+        }
+        break;
+      }
+    }
+  }
+}
+function flow3(dt, fine) {
+  const v = C3.FLOW * (fine ? FINE : 1) * dt, tp = tip3(), side = side3();
+  const ins = insideSperm();
+  if (ins) {
+    if (T3.flow) {
+      ins.uHead += T3.flow * v;
+      const uTail = ins.uHead + ins.dirIn * C3.BODY_LEN;
+      if (Math.max(ins.uHead, uTail) < 0) {
+        ins.inside = false;
+        ins.pos = axisPoint(ins.uHead);
+        ins.heading = ins.dirIn > 0 ? Math.atan2(0, -side) : Math.atan2(0, side);
+        events3.push([["Сперматозоидът е изтласкан от пипетата."], "info"]);
+      }
+    }
+    return;
+  }
+  if (T3.flow <= 0) return;
+  if (T3.z > C3.Z_ASP) { tipHighHint(); return; }   // върхът е високо над сперматозоидите
+  let best = null;
+  for (const s of T3.sperm) {
+    const hd = Math.hypot(s.pos[0] - tp[0], s.pos[1] - tp[1]);
+    const te = s.tailEnd(T3.t), td = Math.hypot(te[0] - tp[0], te[1] - tp[1]);
+    const [end, d] = hd <= td ? ["head", hd] : ["tail", td];
+    if (d < C3.ASP_RANGE && (!best || d < best.d)) best = { s, end, d, te };
+  }
+  if (!best) return;
+  const { s, end, d, te } = best, p = end === "head" ? s.pos : te;
+  if (d < 1.5) {
+    s.inside = true; s.motile = s.motile && !s.immobilized;
+    if (end === "tail") { s.dirIn = 1; s.uHead = -C3.BODY_LEN; }
+    else { s.dirIn = -1; s.uHead = 0; events3.push([["Влиза с главата напред: изтласкай", "и го засмучи откъм опашката."], "warn"]); }
+    return;
+  }
+  const k = Math.min(1, v / Math.max(d, 1e-6));
+  s.pos = [s.pos[0] + (tp[0] - p[0]) * k, s.pos[1] + (tp[1] - p[1]) * k];
+}
+let lastHighHint = -1e9;
+function tipHighHint() {
+  const now = performance.now();
+  if (now - lastHighHint > 3000) { lastHighHint = now; events3.push([["Върхът е високо над дъното: засмукването", "не стига до сперматозоида. Спусни го (E)."], "warn"]); }
+}
+function evaluate3() {
+  const s = insideSperm();
+  if (!s) return { ok: false, problems: ["В пипетата няма сперматозоид: засмучи го."], s: null };
+  const p = [];
+  if (s.morph !== "normal") p.push(`Морфологията не е нормална (${MORPH[s.morph]}): изтласкай и избери друг.`);
+  if (!s.wasMotile) p.push("Сперматозоидът е бил неподвижен от начало (вероятно нежизнеспособен).");
+  if (s.damaged) p.push("Сперматозоидът е повреден (притисната глава или средна част).");
+  else if (s.wasMotile && !s.immobilized) p.push("Не е обездвижен: спусни върха до дъното и прекарай пипетата през средата на опашката.");
+  if (s.dirIn < 0) p.push("Влязъл е с главата напред: трябва с опашката напред.");
+  else if (s.uHead < C3.HEAD_MIN) p.push("Главата е още на върха: засмучи още малко.");
+  else if (s.uHead > C3.HEAD_MAX) p.push(`Твърде навътре (${s.uHead.toFixed(0)} µm): изтласкай малко.`);
+  return { ok: p.length === 0, problems: p, s };
+}
+
+/* ---------------- вход */
+const cv3 = $("cv3"), ctx3 = cv3.getContext("2d");
+let W3 = 0, H3 = 0;
+const fov3 = () => Math.min(W3, H3) * 0.47;
+const scale3 = () => OBJ3[T3.obj][1] * (fov3() / BASE_FOV);
+const w2s3 = (x, y) => [W3 / 2 + (x - T3.cam[0]) * scale3(), H3 / 2 + (y - T3.cam[1]) * scale3()];
+const accepts3 = () => !T3.paused && (T3.session.state === "ready" || T3.session.state === "running");
+const start3 = () => { if (T3.session.state === "ready") T3.session.state = "running"; };
+const pressed3 = () => T3.z <= C3.Z_CONTACT;      // върхът опира дъното
+function movePip3(dx, dy) {                       // джойстикът мести пипетата в зрителното поле
+  const lim = fov3() / scale3() * 0.85;
+  let ox = T3.off[0] + dx, oy = T3.off[1] + dy;
+  const r = Math.hypot(ox, oy);
+  if (r > lim) { ox *= lim / r; oy *= lim / r; }
+  if (Math.hypot(T3.cam[0] + ox, T3.cam[1] + oy) <= C3.DROP_R - 15) T3.off = [ox, oy];
+}
+function pipOuter(d) { return Math.min(C3.INJ_MAX_R, C3.INJ_TIP_R + C3.INJ_TAPER * d); }
+function underPipette(p) {                         // точката е под тялото на пипетата
+  const [tx, ty] = tip3(), d = side3() * (p[0] - tx);
+  return d >= -1 && Math.abs(p[1] - ty) <= pipOuter(Math.max(0, d)) + 1.5;
+}
+function moveDish3(dx, dy) {           // блюдото надясно = изгледът (и върхът) наляво в блюдото
+  const nc = [T3.cam[0] - dx, T3.cam[1] - dy];
+  if (Math.hypot(nc[0] + T3.off[0], nc[1] + T3.off[1]) <= C3.DROP_R - 15) T3.cam = nc;
+}
+function setObj3(i) { T3.obj = Math.max(0, Math.min(OBJ3.length - 1, i)); ui3(); }
+
+const ptr3 = new Map(); let drag3 = null, pinch3 = null;
+cv3.addEventListener("pointerdown", e => {
+  if (!accepts3()) return;
+  cv3.setPointerCapture(e.pointerId);
+  const r = cv3.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  ptr3.set(e.pointerId, [x, y]);
+  if (ptr3.size === 2) { const [a, b] = [...ptr3.values()]; pinch3 = { d: Math.hypot(a[0] - b[0], a[1] - b[1]) }; drag3 = null; return; }
+  drag3 = { x, y }; cv3.classList.add("dragging");
+});
+cv3.addEventListener("pointermove", e => {
+  if (!ptr3.has(e.pointerId)) return;
+  const r = cv3.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  ptr3.set(e.pointerId, [x, y]);
+  if (pinch3 && ptr3.size >= 2) {
+    const [a, b] = [...ptr3.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]);
+    if (d > pinch3.d * 1.3) { setObj3(T3.obj + 1); pinch3.d = d; } else if (d < pinch3.d / 1.3) { setObj3(T3.obj - 1); pinch3.d = d; }
+    return;
+  }
+  if (!drag3) return;
+  const dx = x - drag3.x, dy = y - drag3.y;
+  if (dx || dy) { start3(); const s = scale3(); if (T3.mode === "pip") movePip3(dx / s, dy / s); else moveDish3(dx / s, dy / s); }
+  drag3.x = x; drag3.y = y;
+});
+function end3(e) { ptr3.delete(e.pointerId); if (ptr3.size < 2) pinch3 = null; if (!ptr3.size) { drag3 = null; cv3.classList.remove("dragging"); } }
+cv3.addEventListener("pointerup", end3); cv3.addEventListener("pointercancel", end3);
+let wheel3 = 0;
+cv3.addEventListener("wheel", e => {
+  e.preventDefault(); wheel3 += e.deltaY; const step = e.ctrlKey ? 25 : 60;
+  while (wheel3 <= -step) { setObj3(T3.obj + 1); wheel3 += step; }
+  while (wheel3 >= step) { setObj3(T3.obj - 1); wheel3 -= step; }
+}, { passive: false });
+
+const keys3 = new Set();
+document.addEventListener("keydown", e => {
+  if ($("stage3").hidden) return;
+  const k = e.key.toLowerCase();
+  if (!$("help3").hidden) { if (k === "h" || k === "escape") { S3close(); e.preventDefault(); } return; }
+  if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
+  keys3.add(k);
+  if (e.repeat) return;
+  if (k === "h") S3open();
+  else if (["1", "2", "3", "4", "5"].includes(k)) setObj3(+k - 1);
+  else if (k === "r") newDrop3();
+  else if (k === "m") toggleHand3();
+  else if (k === "enter") { if (!$("result3").hidden) newDrop3(); else check3(); }
+});
+document.addEventListener("keyup", e => keys3.delete(e.key.toLowerCase()));
+window.addEventListener("blur", () => { keys3.clear(); T3.holdAsp = T3.holdExp = T3.holdDown = T3.holdUp = false; });
+
+function holdButton(el, prop) {
+  const on = e => { if (!accepts3()) return; e.preventDefault(); T3[prop] = true; start3(); el.classList.add("on"); };
+  const off = () => { T3[prop] = false; el.classList.remove("on"); };
+  el.addEventListener("pointerdown", on);
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, off));
+}
+holdButton($("btnAsp3"), "holdAsp");
+holdButton($("btnExp3"), "holdExp");
+holdButton($("btnDown3"), "holdDown");
+holdButton($("btnUp3"), "holdUp");
+function setMode3(m) {
+  T3.mode = m;
+  $("mode3Pip").setAttribute("aria-pressed", m === "pip");
+  $("mode3Dish").setAttribute("aria-pressed", m === "dish");
+}
+$("mode3Pip").onclick = () => setMode3("pip");
+$("mode3Dish").onclick = () => setMode3("dish");
+
+function toggleHand3() {
+  S.side = -S.side;
+  document.querySelectorAll("#pickHand .btn").forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === S.side));
+  newDrop3(); where3();
+  toast3([side3() > 0 ? "Десняк: инжекционната пипета е отдясно." : "Левак: инжекционната пипета е отляво."], "info", 1800);
+}
+function check3() {
+  if (!accepts3()) return;
+  start3();
+  T3.session.attempts++;
+  const ev = evaluate3();
+  if (!ev.ok) { toast3(ev.problems, "err", 4000); showLastCheck("lastCheck3", ev.problems, false); ui3(); return; }
+  T3.session.state = "done";
+  showLastCheck("lastCheck3", ["Правилно!"], true);
+  T3.results.push({ n: T3.results.length + 1, t: T3.session.t, ok: T3.session.t <= LIMIT, done: true, practice: GAME.practice, attempts: T3.session.attempts, depth: ev.s.uHead });
+  showResult3(true, ev.s);
+  ui3();
+}
+
+/* ---------------- интерфейс */
+$("obj3Minus").onclick = () => setObj3(T3.obj - 1);
+$("obj3Plus").onclick = () => setObj3(T3.obj + 1);
+$("btnCheck3").onclick = check3;
+$("btnNew3").onclick = newDrop3;
+$("res3Next").onclick = newDrop3;
+$("btnHand3").onclick = toggleHand3;
+$("help3Close").onclick = () => S3close();
+$("help3").addEventListener("click", e => { if (e.target === $("help3")) S3close(); });
+function S3open() {
+  $("help3Hand").textContent = S.side < 0 ? "Десняк: инжекционната пипета е отдясно." : "Левак: инжекционната пипета е отляво (огледално на десняк).";
+  T3.paused = true; $("help3").hidden = false; $("help3Close").focus();
+}
+function S3close() { $("help3").hidden = true; T3.paused = false; }
+window.S3open = S3open;
+function spSet(n) { T3.n = Math.max(C3.SPERM_MIN, Math.min(C3.SPERM_MAX, n)); $("spOut").textContent = T3.n; }
+$("spMinus").onclick = () => spSet(T3.n - 1);
+$("spPlus").onclick = () => spSet(T3.n + 1);
+function where3() { $("where").textContent = `Етап 2: сперматозоидът (${T3.n} сперматозоида, ${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`; }
+$("startStage3").onclick = () => {
+  $("menu").hidden = true; $("stage").hidden = true; $("stage3").hidden = false;
+  $("btnMenu").hidden = false; $("btnHelp").hidden = false;
+  T3.results = []; where3(); resize3(); newDrop3(); S3open();
+};
+
+let toast3Timer = 0;
+function toast3(lines, kind, ms) {
+  const t = $("toast3");
+  t.innerHTML = lines.map(l => `<div>${l}</div>`).join("");
+  t.className = "toast " + (kind === "err" ? "" : kind);
+  t.hidden = false; clearTimeout(toast3Timer);
+  toast3Timer = setTimeout(() => { t.hidden = true; }, ms || 3000);
+}
+function showResult3(ok, sp) {
+  $("res3Title").textContent = ok ? `Готово! Време: ${T3.session.t.toFixed(1)} s` : `Времето изтече (${LIMIT} s)`;
+  $("res3Title").className = ok ? "ok" : "bad";
+  $("res3Body").innerHTML = ok
+    ? `<p>Сперматозоид: нормален, обездвижен, с опашката напред</p><p>Главата е на ${sp.uHead.toFixed(0)} µm от върха</p><p>Проверки: ${T3.session.attempts}</p>`
+    : `<p>Проверки: ${T3.session.attempts}</p>`;
+  $("result3").hidden = false; $("res3Auto").hidden = true;
+  if (ok) startAutoNext("s3", "res3Auto", "Следващата капка", newDrop3);
+  $("res3Next").focus();
+}
+function set3(id, text, cls) { const el = $(id); el.textContent = text; el.className = cls || ""; }
+function ui3() {
+  const ins = insideSperm();
+  set3("w3Z", `${pressed3() ? 0 : T3.z.toFixed(0)} µm`, pressed3() ? "ok" : "");
+  set3("w3Flow", { 1: "засмукване", "-1": "изтласкване", 0: "няма" }[T3.flow], T3.flow ? "on" : "");
+  if (ins) {
+    set3("w3In", "да");
+    set3("w3Immob", ins.damaged ? "повреден" : ins.immobilized ? "да" : "не", ins.immobilized && !ins.damaged ? "ok" : "bad");
+    set3("w3Dir", ins.dirIn > 0 ? "опашката" : "главата", ins.dirIn > 0 ? "ok" : "bad");
+    set3("w3Depth", `${ins.uHead.toFixed(0)} µm`, ins.uHead >= C3.HEAD_MIN && ins.uHead <= C3.HEAD_MAX ? "ok" : "");
+  } else { set3("w3In", "няма"); set3("w3Immob", "–"); set3("w3Dir", "–"); set3("w3Depth", "–"); }
+  set3("w3Obj", OBJ3[T3.obj][0]);
+  set3("w3Mag", `${MAG3[T3.obj]}x`);
+  set3("w3Count", String(T3.sperm.length));
+  set3("w3Immobs", String(T3.sperm.filter(s => s.immobilized).length));
+  set3("w3Hand", S.side < 0 ? "десняк" : "левак");
+  $("obj3Out").textContent = OBJ3[T3.obj][0];
+  $("btnHand3").textContent = S.side < 0 ? "Превключи на левак" : "Превключи на десняк";
+  const ss = T3.session, rem = Math.max(0, LIMIT - ss.t), tEl = $("timer3");
+  $("timerTitle3").textContent = GAME.practice ? "Време (упражнение)" : "Време";
+  if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
+  else if (GAME.practice) { tEl.textContent = fmtT(ss.t); tEl.className = "timer " + (ss.t > LIMIT ? "warn" : ""); }
+  else { tEl.textContent = fmtT(rem); tEl.className = "timer " + (rem <= T_CRIT ? "crit" : rem <= T_WARN ? "warn" : ""); }
+  $("tstatus3").textContent = { ready: "Тръгва при първото действие",
+    running: GAME.practice ? `Упражнение, без лимит. Проверки: ${ss.attempts}` : `Тече. Проверки: ${ss.attempts}`,
+    done: "Сперматозоидът е готов", expired: "Времето изтече" }[ss.state];
+  const list = $("results3");
+  if (T3.results.length) {
+    list.innerHTML = T3.results.slice(-10).map(r =>
+      `<li class="${r.ok ? "ok" : r.practice ? "warn" : "bad"}"><span>Опит ${r.n}</span><span>${r.done ? r.t.toFixed(1) + " s" : "изтекло"}, проверки ${r.attempts}</span></li>`).join("");
+    $("inTime3").textContent = `Успешни до ${LIMIT} s: ${T3.results.filter(r => r.ok).length} от ${T3.results.length}`;
+  } else { list.innerHTML = '<li class="empty">Още няма завършени опити</li>'; $("inTime3").textContent = ""; }
+}
+
+/* ---------------- рисуване */
+function resize3() {
+  const box = $("scope3").getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  W3 = Math.max(200, box.width); H3 = Math.max(200, box.height);
+  cv3.width = Math.round(W3 * dpr); cv3.height = Math.round(H3 * dpr);
+  ctx3.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+if (window.ResizeObserver) new ResizeObserver(resize3).observe($("scope3"));
+window.addEventListener("resize", resize3);
+
+function headPoly(sp, c, heading, s) {
+  const [ls, ws] = sp.headScale(), a = C3.HEAD_LEN * ls / 2, b = C3.HEAD_W * ws / 2, pts = [];
+  for (let i = 0; i < 14; i++) {
+    const t = 2 * Math.PI * i / 14, ra = sp.morph === "amorphous" ? sp.amorph[i % 10] : 1;
+    const v = rot2([a * Math.cos(t) * ra, b * Math.sin(t) * ra * (Math.cos(t) > 0 ? 0.92 : 1)], heading);
+    pts.push([c[0] + v[0] * s, c[1] + v[1] * s]);
+  }
+  return pts;
+}
+function drawSperm(sp, head, heading, neck, pts, fade) {
+  const s = scale3(), g = ctx3;
+  g.lineCap = "round"; g.lineJoin = "round";
+  g.strokeStyle = fade ? "rgba(92,94,88,0.75)" : COL3.tail; g.lineWidth = Math.max(1, 0.55 * s);
+  g.beginPath(); pts.forEach((p, i) => { const q = w2s3(...p); i ? g.lineTo(...q) : g.moveTo(...q); }); g.stroke();
+  g.strokeStyle = COL3.mid; g.lineWidth = Math.max(1, 1.0 * s);
+  g.beginPath(); g.moveTo(...w2s3(...neck)); g.lineTo(...w2s3(...pts[0])); g.stroke();
+  const poly = headPoly(sp, w2s3(...head), heading, s);
+  g.beginPath(); poly.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.closePath();
+  g.fillStyle = sp.damaged ? COL3.damaged : COL3.head; g.fill();
+  g.strokeStyle = COL3.headEdge; g.lineWidth = Math.max(1, 0.5 * s); g.stroke();
+}
+function drawFree(sp) {
+  const { neck, pts } = sp.body(T3.t);
+  drawSperm(sp, sp.pos, sp.heading, neck, pts, false);
+  if (sp.morph === "double") {
+    const p2 = sp.body(T3.t, Math.PI, 3).pts;
+    ctx3.strokeStyle = COL3.tail; ctx3.lineWidth = Math.max(1, 0.55 * scale3());
+    ctx3.beginPath(); p2.forEach((p, i) => { const q = w2s3(...p); i ? ctx3.lineTo(...q) : ctx3.moveTo(...q); }); ctx3.stroke();
+  }
+}
+function drawInside(sp) {
+  const side = side3(), head = axisPoint(sp.uHead), tailDir = side * sp.dirIn;
+  const heading = Math.atan2(0, -tailDir), hl = C3.HEAD_LEN * sp.headScale()[0];
+  const neck = [head[0] + tailDir * hl / 2, head[1]], midEnd = [neck[0] + tailDir * C3.MID_LEN, neck[1]];
+  const L = sp.tailLen(), pts = [midEnd];
+  for (let i = 1; i <= C3.TAIL_SEG; i++) {
+    const lat = sp.motile ? 1.2 * Math.sin(C3.WAVE_K * i * L / C3.TAIL_SEG - C3.WAVE_W * T3.t) : 0;
+    pts.push([midEnd[0] + tailDir * L * i / C3.TAIL_SEG, midEnd[1] + lat]);
+  }
+  drawSperm(sp, head, heading, neck, pts, true);
+}
+function drawPipette3() {
+  // тънка стъклена пипета със скосен връх; стените по-тъмни от фона, горе светъл, долу тъмен контур
+  const g = ctx3, s = scale3(), side = side3(), [tx, ty] = tip3();
+  const outer = d => Math.min(C3.INJ_MAX_R, C3.INJ_TIP_R + C3.INJ_TAPER * d);
+  const inner = d => Math.max(outer(d) - C3.INJ_WALL - 0.02 * d, 2.2);
+  const ds = [0, C3.BEVEL]; let d = C3.BEVEL;
+  while (d < 4000) { d = d * 1.25 + 4; ds.push(d); if (Math.abs(w2s3(tx + side * d, 0)[0] - W3 / 2) > W3) break; }
+  const P = (dd, off) => w2s3(tx + side * dd, ty + off);
+  const tO = ds.map(dd => P(dd, -outer(dd))), tI = ds.map(dd => P(dd, -inner(dd)));
+  const bI = ds.map(dd => P(dd, inner(dd))), bO = ds.map(dd => P(dd, outer(dd)));
+  tO[0] = P(-C3.BEVEL * 0.5, -outer(0) * 0.4); tI[0] = P(0, -inner(0));
+  bI[0] = P(C3.BEVEL, inner(C3.BEVEL)); bO[0] = P(C3.BEVEL, outer(C3.BEVEL));
+  const poly = (pts, fill) => { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.closePath(); g.fillStyle = fill; g.fill(); };
+  // фокусът е на дъното: колкото по-високо е върхът, толкова по-размазана е пипетата
+  const blur = Math.min(1, T3.z / C3.Z_BLUR);
+  poly([...tO, ...tI.slice().reverse()], `rgba(92,95,88,${0.41 - 0.2 * blur})`);
+  poly([...bI, ...bO.slice().reverse()], `rgba(92,95,88,${0.41 - 0.2 * blur})`);
+  poly([...tI, ...bI.slice().reverse()], "rgba(250,250,244,0.16)");
+  const a = 1 - 0.6 * blur, w = Math.max(1, 0.8 * s) * (1 + 3 * blur);
+  const line = (pts, col, alpha, lw) => { g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(...p) : g.moveTo(...p)); g.strokeStyle = `rgba(${col},${alpha})`; g.lineWidth = lw; g.stroke(); };
+  line(tO, "252,252,246", a, w); line(bO, "78,80,74", a, w);
+  line(tI, "78,80,74", a / 2, Math.max(1, w / 2)); line(bI, "252,252,246", a / 2, Math.max(1, w / 2));
+  line([tO[0], bO[0]], "78,80,74", a, Math.max(1, w / 2));
+  if (pressed3()) { g.beginPath(); g.arc(...w2s3(tx, ty), Math.max(2, 1.2 * s), 0, 2 * Math.PI); g.fillStyle = "#3C3E3A"; g.fill(); }
+}
+function draw3() {
+  const g = ctx3, s = scale3();
+  g.fillStyle = COL3.oil; g.fillRect(0, 0, W3, H3);
+  const [dx, dy] = w2s3(0, 0);
+  g.beginPath(); g.arc(dx, dy, C3.DROP_R * s, 0, 2 * Math.PI); g.fillStyle = COL3.pvp; g.fill();
+  g.lineWidth = Math.max(2, 3 * s); g.strokeStyle = COL3.edge; g.stroke();
+  const high = T3.z > 3;
+  if (high) drawPipette3();                         // размазаната пипета е „зад“ фокусираните сперматозоиди
+  for (const sp of T3.sperm) if (!sp.inside) drawFree(sp);
+  const near = nearestFree();
+  if (near) { const c = w2s3(...near.pos); g.beginPath(); g.arc(c[0], c[1], Math.max(10, 9 * s), 0, 2 * Math.PI); g.strokeStyle = COL3.target; g.lineWidth = 1.5; g.stroke(); }
+  if (!high) drawPipette3();
+  const ins = insideSperm(); if (ins) drawInside(ins);
+  // зрително поле
+  const R = fov3(), cx = W3 / 2, cy = H3 / 2;
+  const grad = g.createRadialGradient(cx, cy, R - 26, cx, cy, R);
+  grad.addColorStop(0, "rgba(14,20,26,0)"); grad.addColorStop(1, "#0E141A");
+  g.fillStyle = grad; g.beginPath(); g.arc(cx, cy, R, 0, 2 * Math.PI); g.fill();
+  g.beginPath(); g.rect(0, 0, W3, H3); g.arc(cx, cy, R - 0.5, 0, 2 * Math.PI, true); g.fillStyle = "#0E141A"; g.fill();
+  // мащабна скала
+  const tgt = Math.max(70, R * 0.28); let L = 10;
+  for (const o of [10, 20, 50, 100, 200, 500]) if (Math.abs(o * s - tgt) < Math.abs(L * s - tgt)) L = o;
+  const x1 = cx + R * 0.42, y = cy + R * 0.7;
+  g.strokeStyle = "#1E1E1E"; g.lineWidth = 4; g.beginPath(); g.moveTo(x1, y); g.lineTo(x1 + L * s, y); g.stroke();
+  g.fillStyle = "#1E1E1E"; g.font = '500 14px "IBM Plex Sans", sans-serif'; g.textAlign = "center"; g.textBaseline = "bottom";
+  g.fillText(`${L} µm`, x1 + L * s / 2, y - 5);
+}
+
+/* ---------------- цикъл */
+let last3 = performance.now(), ui3Acc = 0;
+function frame3(now) {
+  const dt = Math.min(0.05, (now - last3) / 1000); last3 = now;
+  if (!$("stage3").hidden) {
+    if (!T3.paused) {
+      const has = k => keys3.has(k), fine = has("shift");
+      if (accepts3()) {
+        const k = fine ? FINE : 1;
+        const px = (has("arrowright") ? 1 : 0) - (has("arrowleft") ? 1 : 0), py = (has("arrowdown") ? 1 : 0) - (has("arrowup") ? 1 : 0);
+        if (px || py) { start3(); const n = Math.hypot(px, py), v = C3.PIP_SPEED * k * dt; movePip3(px / n * v, py / n * v); }
+        const dx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), dy = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
+        if (dx || dy) { start3(); const n = Math.hypot(dx, dy), v = C3.STAGE_SPEED * k * dt; moveDish3(dx / n * v, dy / n * v); }
+        const dz = ((has("q") || T3.holdUp) ? 1 : 0) - ((has("e") || T3.holdDown) ? 1 : 0);
+        if (dz) { start3(); T3.z = Math.max(0, Math.min(C3.Z_MAX, T3.z + dz * C3.Z_SPEED * k * dt)); }
+        const asp = has(" ") || T3.holdAsp, exp = has("b") || T3.holdExp;
+        T3.flow = asp && !exp ? 1 : exp && !asp ? -1 : 0;
+        if (T3.flow) start3();
+      } else T3.flow = 0;
+      T3.t += dt;
+      for (const sp of T3.sperm) {
+        sp.updateFree(dt);
+        // спусната пипета е препятствие: сперматозоидът не минава под нея, а се плъзга покрай стъклото
+        if (T3.z <= 3 && !sp.inside && underPipette(sp.pos)) {
+          const [tx, ty] = tip3(), d = Math.max(0, side3() * (sp.pos[0] - tx)), edge = pipOuter(d) + 2;
+          sp.pos = [sp.pos[0], sp.pos[1] >= ty ? ty + edge : ty - edge];
+        }
+      }
+      const b = tip3();
+      if (pressed3() && accepts3()) {
+        checkPress(T3.prevTip, b);
+        // на живо върхът не се влачи по дъното при гонене - само кратко движение при рязането
+        T3.bottomDrag += Math.hypot(b[0] - T3.prevTip[0], b[1] - T3.prevTip[1]);
+        if (T3.bottomDrag > C3.BOTTOM_DRAG) {
+          T3.bottomDrag = 0;
+          events3.push([["Върхът се влачи по дъното. Докато доближаваш, дръж го 2–3 µm", "над дъното и го спусни само за рязането (Shift + E спуска бавно)."], "warn"]);
+        }
+      } else T3.bottomDrag = 0;
+      T3.prevTip = b;
+      if (accepts3()) flow3(dt, fine);
+      if (events3.length) { const [lines, kind] = events3[events3.length - 1]; toast3(lines, kind); events3 = []; }
+      const ss = T3.session;
+      if (ss.state === "running") {
+        ss.t += dt;
+        if (!GAME.practice && ss.t >= LIMIT) {
+          ss.t = LIMIT; ss.state = "expired";
+          T3.results.push({ n: T3.results.length + 1, t: LIMIT, ok: false, attempts: ss.attempts });
+          showResult3(false);
+        }
+      }
+    }
+    draw3();
+    ui3Acc += dt; if (ui3Acc > 0.1) { ui3(); ui3Acc = 0; }
+  }
+  requestAnimationFrame(frame3);
+}
+requestAnimationFrame(frame3);
+
+/* ============================================================ правила (rules.ini) */
+function parseIni(text) {
+  const out = {}; let sec = "";
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.replace(/[;#].*$/, "").trim();
+    if (!line) continue;
+    const m = line.match(/^\[(.+)\]$/);
+    if (m) { sec = m[1].trim().toLowerCase(); out[sec] = out[sec] || {}; continue; }
+    const kv = line.match(/^([^=]+)=(.*)$/);
+    if (kv && sec) out[sec][kv[1].trim().toLowerCase()] = kv[2].trim();
+  }
+  return out;
+}
+function applyRules(r) {
+  const num = (sec, key, lo, hi, cur) => {
+    const v = parseFloat(((r[sec] || {})[key] ?? ""));
+    return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : cur;
+  };
+  LIMIT = num("general", "time_limit_s", 10, 600, LIMIT);
+  AUTO_NEXT_S = num("general", "auto_next_s", 0, 30, AUTO_NEXT_S);
+  C3.SPEED = [num("stage2", "sperm_speed_min", 0, 100, C3.SPEED[0]), num("stage2", "sperm_speed_max", 0, 100, C3.SPEED[1])];
+  C3.NORMAL_SHARE = num("stage2", "normal_share", 0, 1, C3.NORMAL_SHARE);
+  C3.IMMOTILE = num("stage2", "immotile_share", 0, 1, C3.IMMOTILE);
+  C3.IMMOB_ZONE = [num("stage2", "immob_from", 0, 1, C3.IMMOB_ZONE[0]), num("stage2", "immob_to", 0, 1, C3.IMMOB_ZONE[1])];
+  C3.HEAD_MIN = num("stage2", "head_min_um", 0, 500, C3.HEAD_MIN);
+  C3.HEAD_MAX = num("stage2", "head_max_um", 0, 500, C3.HEAD_MAX);
+  ORIENT_TOL_H = num("stage3", "orient_tol_h", 0.05, 6, ORIENT_TOL_H);
+  TILT_TOL = num("stage3", "tilt_tol_deg", 1, 90, TILT_TOL);
+  Z2_TOL = num("stage3", "equator_tol_um", 1, 100, Z2_TOL);
+  CAPTURE = num("stage3", "capture_um", 5, 200, CAPTURE);
+  const rot = ((r.stage3 || {}).rotation || "").toLowerCase();
+  if (["pipette", "button", "both"].includes(rot)) ROT3 = rot;
+  applyRotationRule();
+  const mode = ((r.general || {}).default_mode || "").toLowerCase();
+  if (mode === "practice" || mode === "exam") {
+    GAME.practice = mode === "practice";
+    document.querySelectorAll("#pickMode .btn").forEach(b => b.setAttribute("aria-pressed", (b.dataset.v === "practice") === GAME.practice));
+  }
+}
+(async () => {
+  if (!/^https?:$/.test(location.protocol)) return;      // отворена като файл: вградените правила
+  try {
+    const res = await fetch("rules.ini", { cache: "no-store" });
+    if (!res.ok) return;
+    applyRules(parseIni(await res.text()));
+    GAME.rulesSource = "rules.ini";
+    $("rulesSrc").textContent = "Правила: rules.ini";
+  } catch (e) { /* няма файл - остават вградените */ }
+})();
+</script>
+</body>
+</html>
