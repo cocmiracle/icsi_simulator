@@ -87,6 +87,8 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 .stepper { display: inline-flex; align-items: center; gap: 6px; }
 .stepper output { min-width: 2.2em; text-align: center; font-weight: 600; }
 .btn.hold:active, .btn.hold.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.hold { touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* ---------- етап */
 #stage, #stage3 { display: grid; grid-template-columns: 250px minmax(0, 1fr) 250px; gap: 0; height: calc(100vh - 52px); height: calc(100dvh - 52px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); }
@@ -204,7 +206,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
   <h1>ICSI симулатор</h1>
   <span class="where" id="where">Тренировка по етапи</span>
   <span class="spacer"></span>
-  <span class="where">версия 3.5</span>
+  <span class="where">версия 3.6</span>
   <button class="btn" id="btnMenu" hidden>Етапи</button>
   <button class="btn" id="btnHelp" hidden>Помощ</button>
 </header>
@@ -423,7 +425,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 
 <div id="help3" class="modal" role="dialog" aria-modal="true" aria-labelledby="help3Title" hidden>
   <div class="help modal-card">
-    <h2 id="help3Title">Етап 2: сперматозоидът (версия 3.5)</h2>
+    <h2 id="help3Title">Етап 2: сперматозоидът (версия 3.6)</h2>
     <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана, а спусната до дъното е ясна.</p>
     <p class="hand-line" id="help3Hand"></p>
     <h3>Задача, до 60 секунди</h3>
@@ -438,7 +440,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
       <dt>Влачене</dt><dd>мести пипетата; в режим „Мести блюдото“ мести блюдото</dd>
       <dt>▼ Спусни, ▲ Вдигни</dt><dd>височина на върха над дъното, докато бутонът е задържан</dd>
       <dt>Засмукай, Изтласкай</dt><dd>действат, докато бутонът е задържан</dd>
-      <dt>Бутони − и +</dt><dd>обектив; също колело, два пръста на тъчпада или разтваряне с пръсти</dd>
+      <dt>Бутони − и +</dt><dd>обектив; също щипване с два пръста на тъчпада или екрана</dd>
     </dl>
     <h3>С клавиатура</h3>
     <dl class="keys">
@@ -458,7 +460,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
 
 <div id="help" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
   <div class="help modal-card">
-    <h2 id="helpTitle">Етап 3: ориентиране и хващане на ооцит (версия 3.5)</h2>
+    <h2 id="helpTitle">Етап 3: ориентиране и хващане на ооцит (версия 3.6)</h2>
     <p>Holding пипетата се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с предметната маса (режим „Блюдо“ или WASD). Пипетата трябва да е на височината на <b>екватора на ооцита</b> (около 78 µm над дъното), иначе смукането не го хваща; извън това ниво тя е размазана.</p>
     <p class="hand-line" id="helpHand"></p>
     <h3>Задача, до 60 секунди</h3>
@@ -481,7 +483,7 @@ button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent
       <dt data-rot="button">Върти + влачене</dt><dd data-rot="button">в средата търкаля клетката като топка, по ръба я завърта в равнината</dd>
       <dt>▼ Спусни, ▲ Вдигни</dt><dd>височина на пипетата, докато бутонът е задържан</dd>
       <dt data-rot="button">Shift + влачене</dt><dd data-rot="button">винаги върти клетката</dd>
-      <dt>Бутони − и +</dt><dd>обектив 4x, 10x, 20x, 40x; също колело, два пръста на тъчпада или разтваряне с пръсти</dd>
+      <dt>Бутони − и +</dt><dd>обектив 4x, 10x, 20x, 40x; също щипване с два пръста на тъчпада или екрана</dd>
     </dl>
     <h3>С клавиатура</h3>
     <dl class="keys">
@@ -525,7 +527,8 @@ const PLACE_R = 480, MIN_GAP = 25, TARGET_RANGE = ZONA_OUT * 2.3;
 // как се върти ооцитът (rules.ini, [stage3] rotation): "pipette" - с инжекционната пипета, "button" - с режим „Върти“ и клавиши, "both"
 let ROT3 = "pipette";
 const INJ_TIP_R = 3.6, INJ_SPEED = 80, INJ_ROLL = 0.9;   // върхът на инжекционната пипета (µm), скорост, „сцепление“ при търкаляне
-let Z2_TOL = 15; const Z2_EQ = ZONA_OUT, Z2_START = 40, Z2_MAX = 150, Z2_SPEED = 40, Z2_BLUR = 40, PIP_SPEED2 = 80;
+let Z2_TOL = 15; const Z2_EQ = ZONA_OUT, Z2_START = ZONA_OUT,   // holding пипетата започва на екватора
+     ROLL2 = 0.9, Z2_MAX = 150, Z2_SPEED = 40, Z2_BLUR = 40, PIP_SPEED2 = 80;
 const C = {
   oil: "#C4C0AA", medium: "#D6D4C8", dropEdge: "#78766A",
   zona: "#ECEADF", zonaEdge: "#8C8A7D", pvs: "#DEDCD0", oopl: [172, 166, 148], gran: [150, 143, 127],
@@ -767,6 +770,17 @@ function resolveCollisions() {
     }
   }
 }
+function rollOnBottom() {
+  // ооцитът лежи на дъното: когато се премести спрямо блюдото (побутнат, притеглен), триенето го търкаля
+  for (const c of S.cells) {
+    const rel = [c.pos[0] - S.dish[0], c.pos[1] - S.dish[1]];
+    if (c.rel && !c.held) {
+      const dx = rel[0] - c.rel[0], dy = rel[1] - c.rel[1], d = Math.hypot(dx, dy);
+      if (d > 1e-4) rotateCell(c, [dy, -dx, 0], ROLL2 * d / ZONA_OUT);
+    }
+    c.rel = rel;
+  }
+}
 function rotateCell(c, axis, ang) {
   if (!c || ang === 0) return;
   c.q = qNorm(qMul(qAxisAngle(axis, ang), c.q)); c.M = qMat(c.q);
@@ -779,6 +793,7 @@ function suctionStep(dt) {
   for (const c of S.cells) { const d = distToHold(c); if (d < bd) { best = c; bd = d; } }
   if (!best) return;
   if (bd < CAPTURE && !zOk2()) { zHint2(); return; }   // пипетата не е на височината на клетката
+  if (bd >= CAPTURE && bd < CAPTURE * 5) farHint2(bd);  // смукането хваща само отблизо
   if (bd < 1.5) { best.held = true; best.pos = [...S.pip]; S.omega = [0, 0, 0]; return; }
   if (bd < CAPTURE) {
     const v = Math.min(SUCTION_SPEED * dt, bd);
@@ -786,6 +801,14 @@ function suctionStep(dt) {
   }
 }
 
+let lastFarHint2 = -1e9;
+function farHint2(d) {
+  const now = performance.now();
+  if (now - lastFarHint2 > 3000) {
+    lastFarHint2 = now;
+    toast([`Ооцитът е на ${Math.round(d)} µm от holding пипетата.`, "Доближи пипетата до zona: смукането хваща отблизо."], "warn", 2600);
+  }
+}
 let lastZHint2 = -1e9;
 function zHint2() {
   const now = performance.now();
@@ -878,9 +901,11 @@ function arcball(c, x0, y0, x1, y1) {
 
 let wheelAcc = 0;
 cv.addEventListener("wheel", e => {
+  // обикновеното превъртане (колело, Magic Mouse, тъчпад) не сменя обектива - само щипването (ctrlKey)
+  if (!e.ctrlKey) return;
   e.preventDefault();
   wheelAcc += e.deltaY;
-  const step = e.ctrlKey ? 25 : 60;              // ctrlKey = разтваряне с два пръста на тъчпада
+  const step = 25;
   while (wheelAcc <= -step) { setObj(S.obj + 1); wheelAcc += step; }
   while (wheelAcc >= step) { setObj(S.obj - 1); wheelAcc -= step; }
 }, { passive: false });
@@ -955,8 +980,15 @@ function toggleSuction() {
   if (!S.suction) for (const c of S.cells) c.held = false;
   ui();
 }
+function syncHandMenu() {
+  document.querySelectorAll("#pickHand .btn").forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === S.side));
+}
 function toggleHand() {
-  S.side = -S.side;
+  if (S.session.state === "running") {
+    toast(["Смяната на ръката започва ново упражнение.", "Натисни „Нова клетка“ и тогава я смени."], "info", 2600);
+    return;
+  }
+  S.side = -S.side; syncHandMenu();
   S.results = [];
   newSession(); updateWhere();
   toast([S.side < 0 ? "Десняк: holding пипетата е отляво." : "Левак: holding пипетата е отдясно."], "info", 1800);
@@ -1036,10 +1068,12 @@ $("objMinus").onclick = () => setObj(S.obj - 1);
 $("objPlus").onclick = () => setObj(S.obj + 1);
 $("btnSuction").onclick = toggleSuction;
 function holdBtn2(el, prop) {
-  const on = e => { if (!acceptsInput()) return; e.preventDefault(); S[prop] = true; startTimerIfReady(); el.classList.add("on"); };
+  // натиснат бутон остава натиснат, докато пръстът/бутонът на мишката не се пусне, дори да мръдне
+  const on = e => { if (!acceptsInput()) return; e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (_) {}
+                    S[prop] = true; startTimerIfReady(); el.classList.add("on"); };
   const off = () => { S[prop] = false; el.classList.remove("on"); };
   el.addEventListener("pointerdown", on);
-  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, off));
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => el.addEventListener(ev, off));
 }
 holdBtn2($("btnDown2"), "holdDown");
 holdBtn2($("btnUp2"), "holdUp");
@@ -1153,6 +1187,8 @@ function ui() {
   $("btnSuction").setAttribute("aria-pressed", S.suction);
   $("btnSuction").textContent = S.suction ? "Смукане: вкл." : "Смукане";
   $("btnHand").textContent = S.side < 0 ? "Превключи на левак" : "Превключи на десняк";
+  $("btnHand").disabled = S.session.state === "running";
+  $("btnHand").title = S.session.state === "running" ? "Смяната на ръката започва ново упражнение" : "M";
   // таймер: голям брояч за текущата клетка
   const ss = S.session, lapLeft = LIMIT - (ss.t - ss.lapStart);
   const tEl = $("timer");
@@ -1400,6 +1436,7 @@ function frame(now) {
       keyControl(dt);
       suctionStep(dt);
       resolveCollisions();
+      rollOnBottom();
       const ss = S.session;
       if (ss.state === "running") {
         ss.t += dt;
@@ -1430,8 +1467,9 @@ const C3 = {
   TAIL_AMP: 4.5, WAVE_K: 2 * Math.PI / 22, WAVE_W: 2 * Math.PI * 6, SPEED: [6, 15],   // в PVP сперматозоидите са бавни
   NORMAL_SHARE: 0.6, IMMOTILE: 0.12, IMMOB_ZONE: [0.15, 0.85], CONTACT: 2.5,
   INJ_TIP_R: 3.6, INJ_TAPER: 0.045, INJ_MAX_R: 28, INJ_WALL: 1.1, BEVEL: 5,
-  STAGE_SPEED: 90, PIP_SPEED: 60, ASP_RANGE: 14, FLOW: 35, HEAD_MIN: 5, HEAD_MAX: 80,
-  Z_START: 10, Z_MAX: 60, Z_SPEED: 40, Z_CONTACT: 1.0, Z_ASP: 6, Z_BLUR: 30, BOTTOM_DRAG: 80,
+  STAGE_SPEED: 90, PIP_SPEED: 60, ASP_RANGE: 10, FLOW: 35, HEAD_MIN: 5, HEAD_MAX: 80,
+  // скосът на иглата: най-ниската точка на скоса е ~3 µm под центъра на върха и опира дъното първа
+  Z_START: 10, Z_MAX: 60, Z_SPEED: 40, Z_CONTACT: 3.0, BEVEL_LEN: 6, Z_ASP: 6, Z_BLUR: 30, BOTTOM_DRAG: 80,
   SPERM_MIN: 2, SPERM_MAX: 30, SPERM_DEFAULT: 14,
 };
 C3.BODY_LEN = C3.HEAD_LEN / 2 + C3.MID_LEN + C3.TAIL_LEN;
@@ -1588,13 +1626,7 @@ function flow3(dt, fine) {
   }
   if (T3.flow <= 0) return;
   if (T3.z > C3.Z_ASP) { tipHighHint(); return; }   // върхът е високо над сперматозоидите
-  let best = null;
-  for (const s of T3.sperm) {
-    const hd = Math.hypot(s.pos[0] - tp[0], s.pos[1] - tp[1]);
-    const te = s.tailEnd(T3.t), td = Math.hypot(te[0] - tp[0], te[1] - tp[1]);
-    const [end, d] = hd <= td ? ["head", hd] : ["tail", td];
-    if (d < C3.ASP_RANGE && (!best || d < best.d)) best = { s, end, d, te };
-  }
+  const best = aspCandidate();
   if (!best) return;
   const { s, end, d, te } = best, p = end === "head" ? s.pos : te;
   if (d < 1.5) {
@@ -1606,6 +1638,20 @@ function flow3(dt, fine) {
   const k = Math.min(1, v / Math.max(d, 1e-6));
   s.pos = [s.pos[0] + (tp[0] - p[0]) * k, s.pos[1] + (tp[1] - p[1]) * k];
 }
+// кой сперматозоид ще влезе при засмукване: краят му е при върха; обездвиженият е с предимство
+function aspCandidate() {
+  const tp = tip3(); let best = null;
+  for (const s of T3.sperm) {
+    if (s.inside) continue;
+    const hd = Math.hypot(s.pos[0] - tp[0], s.pos[1] - tp[1]);
+    const te = s.tailEnd(T3.t), td = Math.hypot(te[0] - tp[0], te[1] - tp[1]);
+    const [end, d] = hd <= td ? ["head", hd] : ["tail", td];
+    if (d >= C3.ASP_RANGE) continue;
+    const rank = d - (s.immobilized ? 100 : 0);
+    if (!best || rank < best.rank) best = { s, end, d, te, rank };
+  }
+  return best;
+}
 let lastHighHint = -1e9;
 function tipHighHint() {
   const now = performance.now();
@@ -1615,6 +1661,8 @@ function evaluate3() {
   const s = insideSperm();
   if (!s) return { ok: false, problems: ["В пипетата няма сперматозоид: засмучи го."], s: null };
   const p = [];
+  const state = s.damaged ? "повреден" : s.immobilized ? "обездвижен" : s.wasMotile ? "подвижен" : "неподвижен от начало";
+  const what = `В пипетата: сперматозоид с ${s.morph === "normal" ? "нормална морфология" : MORPH[s.morph]}, ${state}.`;
   if (s.morph !== "normal") p.push(`Морфологията не е нормална (${MORPH[s.morph]}): изтласкай и избери друг.`);
   if (!s.wasMotile) p.push("Сперматозоидът е бил неподвижен от начало (вероятно нежизнеспособен).");
   if (s.damaged) p.push("Сперматозоидът е повреден (притисната глава или средна част).");
@@ -1622,6 +1670,7 @@ function evaluate3() {
   if (s.dirIn < 0) p.push("Влязъл е с главата напред: трябва с опашката напред.");
   else if (s.uHead < C3.HEAD_MIN) p.push("Главата е още на върха: засмучи още малко.");
   else if (s.uHead > C3.HEAD_MAX) p.push(`Твърде навътре (${s.uHead.toFixed(0)} µm): изтласкай малко.`);
+  if (p.length) p.unshift(what);
   return { ok: p.length === 0, problems: p, s };
 }
 
@@ -1633,7 +1682,7 @@ const scale3 = () => OBJ3[T3.obj][1] * (fov3() / BASE_FOV);
 const w2s3 = (x, y) => [W3 / 2 + (x - T3.cam[0]) * scale3(), H3 / 2 + (y - T3.cam[1]) * scale3()];
 const accepts3 = () => !T3.paused && (T3.session.state === "ready" || T3.session.state === "running");
 const start3 = () => { if (T3.session.state === "ready") T3.session.state = "running"; };
-const pressed3 = () => T3.z <= C3.Z_CONTACT;      // върхът опира дъното
+const pressed3 = () => T3.z <= C3.Z_CONTACT;      // долният ръб на скоса опира дъното
 function movePip3(dx, dy) {                       // джойстикът мести пипетата в зрителното поле
   const lim = fov3() / scale3() * 0.85;
   let ox = T3.off[0] + dx, oy = T3.off[1] + dy;
@@ -1679,7 +1728,8 @@ function end3(e) { ptr3.delete(e.pointerId); if (ptr3.size < 2) pinch3 = null; i
 cv3.addEventListener("pointerup", end3); cv3.addEventListener("pointercancel", end3);
 let wheel3 = 0;
 cv3.addEventListener("wheel", e => {
-  e.preventDefault(); wheel3 += e.deltaY; const step = e.ctrlKey ? 25 : 60;
+  if (!e.ctrlKey) return;                          // само щипването сменя обектива
+  e.preventDefault(); wheel3 += e.deltaY; const step = 25;
   while (wheel3 <= -step) { setObj3(T3.obj + 1); wheel3 += step; }
   while (wheel3 >= step) { setObj3(T3.obj - 1); wheel3 -= step; }
 }, { passive: false });
@@ -1702,10 +1752,11 @@ document.addEventListener("keyup", e => keys3.delete(e.key.toLowerCase()));
 window.addEventListener("blur", () => { keys3.clear(); T3.holdAsp = T3.holdExp = T3.holdDown = T3.holdUp = false; });
 
 function holdButton(el, prop) {
-  const on = e => { if (!accepts3()) return; e.preventDefault(); T3[prop] = true; start3(); el.classList.add("on"); };
+  const on = e => { if (!accepts3()) return; e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (_) {}
+                    T3[prop] = true; start3(); el.classList.add("on"); };
   const off = () => { T3[prop] = false; el.classList.remove("on"); };
   el.addEventListener("pointerdown", on);
-  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => el.addEventListener(ev, off));
+  ["pointerup", "pointercancel", "lostpointercapture"].forEach(ev => el.addEventListener(ev, off));
 }
 holdButton($("btnAsp3"), "holdAsp");
 holdButton($("btnExp3"), "holdExp");
@@ -1720,6 +1771,10 @@ $("mode3Pip").onclick = () => setMode3("pip");
 $("mode3Dish").onclick = () => setMode3("dish");
 
 function toggleHand3() {
+  if (T3.session.state === "running") {
+    toast3(["Смяната на ръката започва ново упражнение.", "Натисни „Нова капка“ и тогава я смени."], "info", 2600);
+    return;
+  }
   S.side = -S.side;
   document.querySelectorAll("#pickHand .btn").forEach(b => b.setAttribute("aria-pressed", +b.dataset.v === S.side));
   newDrop3(); where3();
@@ -1784,7 +1839,7 @@ function showResult3(ok, sp) {
 function set3(id, text, cls) { const el = $(id); el.textContent = text; el.className = cls || ""; }
 function ui3() {
   const ins = insideSperm();
-  set3("w3Z", `${pressed3() ? 0 : T3.z.toFixed(0)} µm`, pressed3() ? "ok" : "");
+  set3("w3Z", `${T3.z.toFixed(0)} µm${pressed3() ? ", допира" : ""}`, pressed3() ? "ok" : "");
   set3("w3Flow", { 1: "засмукване", "-1": "изтласкване", 0: "няма" }[T3.flow], T3.flow ? "on" : "");
   if (ins) {
     set3("w3In", "да");
@@ -1799,6 +1854,8 @@ function ui3() {
   set3("w3Hand", S.side < 0 ? "десняк" : "левак");
   $("obj3Out").textContent = OBJ3[T3.obj][0];
   $("btnHand3").textContent = S.side < 0 ? "Превключи на левак" : "Превключи на десняк";
+  $("btnHand3").disabled = T3.session.state === "running";
+  $("btnHand3").title = T3.session.state === "running" ? "Смяната на ръката започва ново упражнение" : "M";
   const ss = T3.session, rem = Math.max(0, LIMIT - ss.t), tEl = $("timer3");
   $("timerTitle3").textContent = GAME.practice ? "Време (упражнение)" : "Време";
   if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
@@ -1900,8 +1957,12 @@ function draw3() {
   const high = T3.z > 3;
   if (high) drawPipette3();                         // размазаната пипета е „зад“ фокусираните сперматозоиди
   for (const sp of T3.sperm) if (!sp.inside) drawFree(sp);
-  const near = nearestFree();
-  if (near) { const c = w2s3(...near.pos); g.beginPath(); g.arc(c[0], c[1], Math.max(10, 9 * s), 0, 2 * Math.PI); g.strokeStyle = COL3.target; g.lineWidth = 1.5; g.stroke(); }
+  const cand = !insideSperm() && T3.z <= C3.Z_ASP ? aspCandidate() : null;
+  const near = cand ? cand.s : nearestFree();
+  if (near) {
+    const c = w2s3(...near.pos); g.beginPath(); g.arc(c[0], c[1], Math.max(10, 9 * s), 0, 2 * Math.PI);
+    g.strokeStyle = cand ? "#2E7D3E" : COL3.target; g.lineWidth = cand ? 2.5 : 1.5; g.stroke();   // зелено: този ще се засмуче
+  }
   if (!high) drawPipette3();
   const ins = insideSperm(); if (ins) drawInside(ins);
   // зрително поле
@@ -1949,7 +2010,9 @@ function frame3(now) {
       }
       const b = tip3();
       if (pressed3() && accepts3()) {
-        checkPress(T3.prevTip, b);
+        const sd = side3();
+        for (const off of [0, C3.BEVEL_LEN / 2, C3.BEVEL_LEN])
+          checkPress([T3.prevTip[0] + sd * off, T3.prevTip[1]], [b[0] + sd * off, b[1]]);
         // на живо върхът не се влачи по дъното при гонене - само кратко движение при рязането
         T3.bottomDrag += Math.hypot(b[0] - T3.prevTip[0], b[1] - T3.prevTip[1]);
         if (T3.bottomDrag > C3.BOTTOM_DRAG) {
