@@ -147,11 +147,11 @@ body.in-stage > header.bar { display: none; }
 #q1Mat { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
 #q1Mat .btn { padding: 7px 6px; }
 #q1Mat .btn:nth-child(n+3) { border-top: 1px solid var(--line); }
-label.anom { display: flex; gap: 8px; align-items: center; font-size: 13.5px; padding: 2px 0; cursor: pointer; }
+label.anom { display: flex; gap: 8px; align-items: center; font-size: 13.5px; padding: 1px 0; cursor: pointer; }
 label.anom input { accent-color: var(--accent); }
 #result1 .card { max-width: min(720px, 96%); width: auto; }
 #result1 .report td { white-space: normal; text-align: left; }
-[data-load][hidden], #pickLoad .btn[hidden] { display: none !important; }
+[data-load][hidden], [data-loadrow][hidden] { display: none !important; }
 #result5 .card { max-width: min(600px, 94%); width: auto; }
 .bar-r .toast { position: static; transform: none; max-width: none; text-align: left; margin: 8px 0 4px; pointer-events: auto; background: var(--btn); }
 .side { padding: 18px 18px; overflow-y: auto; background: var(--panel); }
@@ -200,6 +200,22 @@ label.anom input { accent-color: var(--accent); }
 .result h4.bad { color: var(--err); }
 .result p { margin: 4px 0; }
 .result .btn { margin-top: 16px; }
+/* етап 1 (4.7): екран „Старт“, лента с номерата, стъпки на оценката */
+#start1 .card { text-align: center; }
+#start1 .btn.big { width: auto; padding: 13px 40px; }
+.locked { opacity: 0.4; pointer-events: none; }
+.q1strip { display: flex; flex-wrap: wrap; gap: 4px; margin: 2px 0 4px; }
+.q1strip .btn { min-width: 2.3em; padding: 4px 6px; font-size: 13.5px; font-weight: 600; }
+.q1strip .btn.done { border-color: var(--ok); color: var(--ok); }
+.q1strip .btn.done[aria-pressed="true"] { color: var(--accent-ink); }
+.q1strip .btn.seen { border-style: dashed; }
+.q1step { font-size: 13px !important; color: var(--ink) !important; }
+.q1step small { color: var(--muted); font-weight: 400; }
+.btn.newex { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.answer1 { margin-top: 8px; padding: 8px 10px; border-left: 3px solid var(--accent); background: var(--btn); font-size: 13.5px; border-radius: 4px; }
+.answer1[hidden] { display: none; }
+.answer1 p { margin: 2px 0; }
+.answer1 .hint { color: var(--muted); }
 
 .toolbar {
   display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: center;
@@ -267,14 +283,14 @@ label.anom input { accent-color: var(--accent); }
   <h1>ICSI симулатор</h1>
   <span class="where" id="where">Тренировка по етапи</span>
   <span class="spacer"></span>
-  <span class="where">версия 4.6</span>
+  <span class="where">версия 4.7</span>
   <button class="btn" id="btnMenu" hidden>Етапи</button>
   <button class="btn" id="btnHelp" hidden>Помощ</button>
 </header>
 
 <main id="menu">
   <h2>Тренировка по етапи</h2>
-  <p class="lead">Всяка стъпка от ICSI процедурата се тренира отделно, докато стане лесна. После всичко заедно, в едно блюдо, за една минута на клетка.</p>
+  <p class="lead">Всяка стъпка от ICSI процедурата се тренира отделно, докато стане лесна. После всичко заедно, в едно блюдо.</p>
   <div class="setup global">
     <span class="lbl" id="lblHand">Ръка, за всички етапи</span>
     <span class="seg" role="group" aria-labelledby="lblHand" id="pickHand">
@@ -283,7 +299,7 @@ label.anom input { accent-color: var(--accent); }
     </span>
     <span class="lbl" id="lblMode">Режим</span>
     <span class="seg" role="group" aria-labelledby="lblMode" id="pickMode">
-      <button class="btn" data-v="exam" aria-pressed="true" title="Лимит 60 s, таймерът брои назад">Изпит</button>
+      <button class="btn" data-v="exam" aria-pressed="true" title="С лимит на времето: таймерът брои назад">Изпит</button>
       <button class="btn" data-v="practice" aria-pressed="false" title="Без лимит: таймерът показва за колко време се справяш">Упражнение</button>
     </span>
     <span class="lbl" id="rulesSrc">Правила: вградени</span>
@@ -295,6 +311,11 @@ label.anom input { accent-color: var(--accent); }
       <span class="t">Преценка на ооцитите</span>
       <span class="d">Капка с ооцити (истински снимки): зрялост (MII, MI, GV, дегенериран) и аномалии; инжектират се само зрелите.</span>
       <span class="act"><button class="btn primary" id="startStage1">Започни</button></span>
+      <div class="setup">
+        <span class="lbl" id="lblCount1">Ооцити за оценка</span>
+        <span class="stepper" role="group" aria-labelledby="lblCount1" data-cnt="s1"><button class="btn" data-d="-1" title="По-малко">−</button><output>10</output><button class="btn" data-d="1" title="Повече">+</button></span>
+        <span class="lbl">от 1 до 12</span>
+      </div>
     </li>
     <li class="ready">
       <span class="num">2</span>
@@ -303,18 +324,10 @@ label.anom input { accent-color: var(--accent); }
       <span class="act"><button class="btn primary" id="startStage3">Започни</button></span>
       <div class="setup">
         <span class="lbl" id="lblSperm">Сперматозоиди в капката</span>
-        <span class="stepper" role="group" aria-labelledby="lblSperm">
-          <button class="btn" id="spMinus" title="По-малко">−</button>
-          <output id="spOut">14</output>
-          <button class="btn" id="spPlus" title="Повече">+</button>
-        </span>
+        <span class="stepper" role="group" aria-labelledby="lblSperm" data-cnt="s2"><button class="btn" data-d="-1" title="По-малко">−</button><output>14</output><button class="btn" data-d="1" title="Повече">+</button></span>
         <span class="lbl">от 2 до 30</span>
-        <span class="lbl" id="lblLoad" data-load hidden>В иглата</span>
-        <span class="seg" role="group" aria-labelledby="lblLoad" id="pickLoad" data-load hidden>
-          <button class="btn" data-v="1" aria-pressed="true">1</button>
-          <button class="btn" data-v="2" aria-pressed="false">2</button>
-          <button class="btn" data-v="3" aria-pressed="false">3</button>
-        </span>
+        <span class="lbl" id="lblLoad" data-loadrow="s2" hidden>В иглата</span>
+        <span data-loadrow="s2" hidden><span class="stepper" role="group" aria-labelledby="lblLoad" data-cnt="s2load"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span></span>
       </div>
     </li>
     <li class="ready">
@@ -324,16 +337,8 @@ label.anom input { accent-color: var(--accent); }
       <span class="act"><button class="btn primary" id="startStage2">Започни</button></span>
       <div class="setup">
         <span class="lbl" id="lblCount">Ооцити в капката</span>
-        <span class="seg" role="group" aria-labelledby="lblCount" id="pickCount">
-          <button class="btn" data-v="1" aria-pressed="true">1</button>
-          <button class="btn" data-v="2" aria-pressed="false">2</button>
-          <button class="btn" data-v="3" aria-pressed="false">3</button>
-          <button class="btn" data-v="4" aria-pressed="false">4</button>
-          <button class="btn" data-v="5" aria-pressed="false">5</button>
-          <button class="btn" data-v="6" aria-pressed="false">6</button>
-          <button class="btn" data-v="7" aria-pressed="false">7</button>
-          <button class="btn" data-v="8" aria-pressed="false">8</button>
-        </span>
+        <span class="stepper" role="group" aria-labelledby="lblCount" data-cnt="s3"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span>
+        <span class="lbl">от 1 до 8</span>
       </div>
     </li>
     <li class="ready">
@@ -341,12 +346,29 @@ label.anom input { accent-color: var(--accent); }
       <span class="t">Инжектиране</span>
       <span class="d">Пробиване на zona pellucida, пробиване на мембраната със засмукване и инжектиране на сперматозоида (дясна ръка).</span>
       <span class="act"><button class="btn primary" id="startStage4">Започни</button></span>
+      <div class="setup">
+        <span class="lbl" id="lblCount4">Ооцити в серията</span>
+        <span class="stepper" role="group" aria-labelledby="lblCount4" data-cnt="s4"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span>
+        <span class="lbl">от 1 до 8</span>
+        <span class="lbl" id="lblLoad4" data-loadrow="s4" hidden>В иглата</span>
+        <span data-loadrow="s4" hidden><span class="stepper" role="group" aria-labelledby="lblLoad4" data-cnt="s4load"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span></span>
+      </div>
     </li>
     <li class="ready">
       <span class="num">5</span>
       <span class="t">Цялата процедура</span>
-      <span class="d">Едно ICSI блюдо: за всеки ооцит сперматозоид от PVP, местене на блюдото, ориентиране, хващане и инжектиране с една и съща игла. От 1 до 8 ооцита, по една минута на клетка.</span>
+      <span class="d">Едно ICSI блюдо: за всеки ооцит сперматозоид от PVP, местене на блюдото, ориентиране, хващане и инжектиране с една и съща игла.</span>
       <span class="act"><button class="btn primary" id="startStage5">Започни</button></span>
+      <div class="setup">
+        <span class="lbl" id="lblCount5">Ооцити</span>
+        <span class="stepper" role="group" aria-labelledby="lblCount5" data-cnt="s5"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span>
+        <span class="lbl">от 1 до 8</span>
+        <span class="lbl" id="lblSperm5">Сперматозоиди в PVP</span>
+        <span class="stepper" role="group" aria-labelledby="lblSperm5" data-cnt="s5sperm"><button class="btn" data-d="-1" title="По-малко">−</button><output>14</output><button class="btn" data-d="1" title="Повече">+</button></span>
+        <span class="lbl">до 30</span>
+        <span class="lbl" id="lblLoad5" data-loadrow="s5" hidden>В иглата</span>
+        <span data-loadrow="s5" hidden><span class="stepper" role="group" aria-labelledby="lblLoad5" data-cnt="s5load"><button class="btn" data-d="-1" title="По-малко">−</button><output>1</output><button class="btn" data-d="1" title="Повече">+</button></span></span>
+      </div>
     </li>
   </ol>
 
@@ -377,14 +399,26 @@ label.anom input { accent-color: var(--accent); }
       <div class="obj" aria-label="Обектив">
         <button class="btn" id="obj1Minus">−</button><output id="obj1Out">10x</output><button class="btn" id="obj1Plus">+</button>
       </div>
-      <p class="hint">Влачене на фона или W A S D местят блюдото. Клик върху ооцит го избира; оценката се отбелязва вдясно. <kbd>Tab</kbd> минава към следващия.</p>
+      <p class="hint">Влачене на фона или W A S D местят блюдото. Оценката се отбелязва вдясно.</p>
+    </div>
+    <div id="q1Left">
+      <h3>Ооцити <small>(✓ – готов; клик или <kbd>Tab</kbd> – друг)</small></h3>
+      <div class="q1strip" id="q1Strip" role="group" aria-label="Избор на ооцит"></div>
+      <button class="btn primary big" id="btnDone1" title="Enter" style="margin-top:12px">Готово – следващ ооцит</button>
+      <button class="btn wide" id="btnShow1" style="margin-top:8px" hidden>Покажи отговора</button>
+      <div class="answer1" id="answer1" hidden></div>
     </div>
     <div class="spacer"></div>
-    <button class="btn primary big" id="btnCheck1" title="Enter">Провери всички</button>
+    <button class="btn big" id="btnCheck1" title="Ctrl + Enter">Завърши и провери</button>
   </aside>
   <section class="scope-wrap" aria-label="Зрително поле на микроскопа">
     <div class="scope" id="scope1">
       <canvas id="cv1" aria-label="Изглед през микроскопа: капка с ооцити"></canvas>
+      <div class="result" id="start1" hidden>
+        <div class="card"><h4>Преценка на ооцитите</h4><p id="start1Info"></p>
+          <p class="hint">Хронометърът тръгва след „Старт“.</p>
+          <button class="btn primary big" id="btnStart1" title="Enter или интервал">Старт</button></div>
+      </div>
       <div class="result" id="result1" hidden>
         <div class="card"><h4 id="res1Title">Готово</h4><div id="res1Body"></div><button class="btn primary" id="res1Next">Ново упражнение</button></div>
       </div>
@@ -398,32 +432,41 @@ label.anom input { accent-color: var(--accent); }
     <h3 id="timerTitle1">Време</h3>
     <div class="timer" id="timer1">1:00.0</div>
     <p class="tstatus" id="tstatus1">Тръгва при първото действие</p>
+    <div id="q1Work">
     <h3 id="q1SelTitle">Избери ооцит</h3>
     <div id="q1Panel" hidden>
+      <h3 class="q1step">1. Зрялост <small>– избери едно</small></h3>
       <div class="seg grid2" role="group" aria-label="Зрялост" id="q1Mat">
         <button class="btn" data-v="MII">MII</button><button class="btn" data-v="MI">MI</button>
         <button class="btn" data-v="GV">GV</button><button class="btn" data-v="DEG">Дегенериран</button>
       </div>
-      <h3>Аномалии</h3>
-      <label class="anom"><input type="checkbox" id="q1None"> Без аномалии</label>
-      <div class="anomgrid" id="q1Anom"></div>
+      <div id="q1AnomBox" hidden>
+        <h3 class="q1step">2. Аномалии <small>– може няколко</small></h3>
+        <label class="anom"><input type="checkbox" id="q1None"> Без аномалии</label>
+        <div class="anomgrid" id="q1Anom"></div>
+      </div>
+    </div>
     </div>
     <div class="toast" id="toast1" role="status" hidden></div>
     <div class="spacer"></div>
-    <button class="btn wide" id="btnNew1" title="R">Ново упражнение</button>
+    <button class="btn wide newex" id="btnNew1" title="R">Ново упражнение</button>
   </aside>
 </main>
 
 <div id="help1" class="modal" role="dialog" aria-modal="true" aria-labelledby="help1Title" hidden>
   <div class="help modal-card">
     <h2 id="help1Title">Етап 1: преценка на ооцитите</h2>
-    <p>В капката има няколко ооцита (броят се избира в менюто). Разгледай всеки и отбележи зрялостта му (MII, MI, GV или дегенериран) и аномалиите, които виждаш, или „Без аномалии“. Инжектират се само зрелите (MII).</p>
+    <p>В капката има няколко ооцита (броят се избира в менюто, до бутона „Започни“). Оценката на всеки ооцит е в две стъпки: <b>1. зрялост</b> (MII, MI, GV или дегенериран) и <b>2. аномалии – само ако е зрял (MII)</b>: една или няколко, или „Без аномалии“. Инжектират се само зрелите.</p>
     <h3>Как</h3>
     <ol>
-      <li>Мести блюдото (влачене на фона или W A S D) и сменяй увеличението (− / +, клавиши 1–5).</li>
-      <li>Клик върху ооцит го избира; вдясно отбележи зрялостта и аномалиите. <kbd>Tab</kbd> минава към следващия.</li>
-      <li>Когато си оценил всички, натисни „Провери всички“. Отчетът показва за всеки ооцит какво си отбелязал и кое е вярно.</li>
+      <li>Натисни „Старт“ – тогава тръгва хронометърът.</li>
+      <li>На екрана е текущият ооцит. Мести блюдото (влачене на фона или W A S D) и сменяй увеличението (− / +, клавиши 1–5).</li>
+      <li>Вдясно избери зрялостта. Ако е MII, отдолу се появяват аномалиите.</li>
+      <li>„Готово – следващ ооцит“ (Enter) минава към следващия неоценен. Всеки ооцит може да се избере и с номера му (лентата вдясно, клик върху него или <kbd>Tab</kbd>) – редът е свободен.</li>
+      <li>След последния ооцит или с „Завърши и провери“ излиза отчетът: какво си отбелязал, кое е вярно, точки и оценка.</li>
+      <li>„Ново упражнение“ (R) започва отначало с нови ооцити по всяко време.</li>
     </ol>
+    <p class="hint">В режим „Упражнение“ има бутон „Покажи отговора“: показва вярната оценка на ооцита и на какво да се гледа. В отчета тези ооцити са отбелязани.</p>
     <p class="hint">Точки (Изпит): незрял, определен като MII −40; MII, определен като незрял −30; друга грешка в зрялостта −20; пропусната аномалия −15; отбелязана аномалия, която я няма −10 (в правилата). Всеки ооцит е от 100.</p>
     <p class="hint">Снимки: BioMedical Engineering OnLine 2023 (фиг. 1) и Journal of Assisted Reproduction and Genetics 2024 (Kashutina и колеги), лиценз CC BY 4.0; премахнати са само отбелязванията на авторите. Снимките се показват завъртени и огледални, за да не се запомнят.</p>
     <div class="foot"><button class="btn primary" id="help1Close">Започни</button></div>
@@ -473,7 +516,7 @@ label.anom input { accent-color: var(--accent); }
         <button class="btn hold" id="btnDown2" title="E, задръж">▼ Спусни</button>
         <button class="btn hold" id="btnUp2" title="Q, задръж">▲ Вдигни</button>
       </div>
-      <button class="btn wide" id="btnSuction" aria-pressed="false" title="Space">Смукане</button>
+      <button class="btn wide" id="btnSuction" aria-pressed="false" title="G">Смукане (G)</button>
       <button class="btn wide" id="btnHand" title="M">Превключи на левак</button>
       <p class="hint" id="shiftHint"><kbd>Shift</kbd> + влачене винаги върти клетката.</p>
     </div>
@@ -780,7 +823,7 @@ label.anom input { accent-color: var(--accent); }
     <h2 id="help5Title">Етап 5: цялата процедура</h2>
     <p>Едно ICSI блюдо: капка PVP със сперматозоидите и капка с ооцита, под масло. Пипетите стоят на място, а блюдото се мести с предметната маса, както на живо. Една игла носи сперматозоида от PVP до ооцита.</p>
     <p class="hand-line" id="help5Hand"></p>
-    <h3>Задача: всички ооцити в капката, по една минута на клетка</h3>
+    <h3>Задача: всички ооцити в капката, по <span data-lim="5">5 минути</span> на клетка</h3>
     <p>Броят ооцити се избира в менюто. За всеки ооцит поотделно:</p>
     <ol>
       <li><b>В PVP:</b> иглата е точно над дъното. Ако в менюто е избран повече от един сперматозоид в иглата, засмучи толкова, и при всеки ооцит изтласквай само първия: два в един ооцит дават 0 точки за клетката. Избери нормален подвижен сперматозоид, обездвижи го (спусни до дъното и мини напречно през опашката) и го засмучи с опашката напред.</li>
@@ -807,16 +850,17 @@ label.anom input { accent-color: var(--accent); }
 <div id="help4" class="modal" role="dialog" aria-modal="true" aria-labelledby="help4Title" hidden>
   <div class="help modal-card">
     <h2 id="help4Title">Етап 4: инжектиране</h2>
-    <p>Ооцитът е хванат от holding пипетата, с полярното телце на 12 или 6 часа. В инжекционната пипета има един обездвижен сперматозоид, близо до върха.</p>
+    <p>Ооцитът е хванат от holding пипетата, с полярното телце на 12 или 6 часа. В инжекционната пипета има обездвижен сперматозоид, близо до върха (или няколко един зад друг, ако в менюто е избрано „В иглата“). Броят ооцити в серията се избира в менюто.</p>
     <p class="hand-line" id="help4Hand"></p>
-    <h3>Задача, до 60 секунди</h3>
+    <h3>Задача, до <span data-lim="4">60 секунди</span> на клетка</h3>
     <ol>
       <li>Иглата трябва да е на височината на екватора на ооцита (78 µm). Ако не е, при натиск тя се плъзга по zona, вместо да влезе.</li>
       <li>Влез на 3 часа (на 9 часа при огледалната постановка): натисни zona, докато поддаде.</li>
       <li>Продължи навътре: мембраната се разтяга като фуния около върха, но сама не се къса. Не стигай до отсрещната страна.</li>
       <li>Засмучи леко, докато мембраната се скъса: цитоплазмата рязко влиза в иглата.</li>
       <li>Изтласкай цитоплазмата и сперматозоида обратно в ооцита, с възможно най-малко среда.</li>
-      <li>Изтегли иглата и натисни „Провери“.</li>
+      <li>Изтегли иглата и натисни „Провери“. При серия следва следващият ооцит; накрая – средните точки и оценката.</li>
+      <li>Няколко в иглата: при всеки ооцит изтласкай <b>само първия</b>; преди следващия ооцит докарай следващия до върха с леко изтласкване навън. Два в един ооцит дават 0 точки за клетката; излязъл в средата е изгубен.</li>
     </ol>
     <h3>Управление</h3>
     <dl class="keys">
@@ -837,10 +881,10 @@ label.anom input { accent-color: var(--accent); }
 
 <div id="help3" class="modal" role="dialog" aria-modal="true" aria-labelledby="help3Title" hidden>
   <div class="help modal-card">
-    <h2 id="help3Title">Етап 2: сперматозоидът (версия 4.6)</h2>
+    <h2 id="help3Title">Етап 2: сперматозоидът (версия 4.7)</h2>
     <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана, а спусната до дъното е ясна.</p>
     <p class="hand-line" id="help3Hand"></p>
-    <h3>Задача, до 60 секунди</h3>
+    <h3>Задача, до <span data-lim="2">2 минути</span> на сперматозоид</h3>
     <ol>
       <li>Избери подвижен сперматозоид с нормална глава и опашка. Кой какъв е, не пише: разпознаването е част от упражнението.</li>
       <li>Обездвижи го: доближи го с върха 2–3 µm над дъното, над средата на опашката спусни върха до дъното („▼ Спусни“ или E) и с кратко движение прекарай пипетата напречно през опашката. Не влачи върха по дъното, докато гониш сперматозоида. Главата не се пипа.</li>
@@ -874,10 +918,10 @@ label.anom input { accent-color: var(--accent); }
 
 <div id="help" class="modal" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
   <div class="help modal-card">
-    <h2 id="helpTitle">Етап 3: ориентиране и хващане на ооцит (версия 4.6)</h2>
+    <h2 id="helpTitle">Етап 3: ориентиране и хващане на ооцит (версия 4.7)</h2>
     <p>Holding пипетата се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с предметната маса (режим „Блюдо“ или WASD). Пипетата трябва да е на височината на <b>екватора на ооцита</b> (около 78 µm над дъното), иначе смукането не го хваща; извън това ниво тя е размазана.</p>
     <p class="hand-line" id="helpHand"></p>
-    <h3>Задача, до 60 секунди</h3>
+    <h3>Задача, до <span data-lim="3">60 секунди</span> на клетка</h3>
     <ol>
       <li>Докарай клетката близо до върха на пипетата.</li>
       <li>Докато е свободна, я завърти така, че полярното телце да е ясно, във фокус, и срещу „12“ или „6“.
@@ -908,7 +952,7 @@ label.anom input { accent-color: var(--accent); }
       <dt data-rot="pipette-keys"><kbd>U</kbd> / <kbd>O</kbd>, задържан</dt><dd data-rot="pipette-keys">вдига / спуска инжекционната пипета</dd>
       <dt data-rot="button"><kbd>U</kbd> <kbd>O</kbd></dt><dd data-rot="button">завърта клетката в равнината</dd>
       <dt data-rot="button"><kbd>I</kbd> <kbd>K</kbd> <kbd>J</kbd> <kbd>L</kbd></dt><dd data-rot="button">търкаля нагоре, надолу, наляво, надясно</dd>
-      <dt><kbd>Space</kbd></dt><dd>смукане вкл. и изкл.</dd>
+      <dt><kbd>G</kbd></dt><dd>смукане на holding пипетата вкл. и изкл. (както в етап 5)</dd>
       <dt><kbd>Enter</kbd></dt><dd>провери</dd>
       <dt><kbd>1</kbd>–<kbd>5</kbd></dt><dd>обектив 4x, 10x, 20x, 40x, 40x × 1,5</dd>
       <dt><kbd>R</kbd> <kbd>M</kbd> <kbd>H</kbd></dt><dd>нова клетка, десняк или левак, тази помощ</dd>
@@ -931,7 +975,8 @@ const SCORE = {
         lost: 30 },                                   // lost: само в етап 5 - сперматозоидът излезе от иглата
   s3: { pb_position: 35, pb_focus: 35, wrong_height: 10, failed_check: 5, failed_check_max: 20 },
   s1: { immature_as_mii: 40, mii_as_immature: 30, wrong_maturity: 20, missed_anomaly: 15, false_anomaly: 10 },
-  s4: { opposite_membrane: 25, damaged: 25, no_breach: 20, not_delivered: 15, medium: 5, inj_height: 5, failed_check: 5, failed_check_max: 5 },
+  s4: { opposite_membrane: 25, damaged: 25, no_breach: 20, not_delivered: 15, medium: 5, inj_height: 5, failed_check: 5, failed_check_max: 5,
+        two_sperm: 100, spilled: 15 },                // два в един ооцит: клетката е 0; изгубен в средата (при няколко в иглата)
 };
 const PEN_LABEL = {
   bad_morphology: "Сперматозоид с дефект на морфологията", immotile: "Неподвижен (нежизнеспособен) сперматозоид",
@@ -941,6 +986,7 @@ const PEN_LABEL = {
   opposite_membrane: "Пробита отсрещна мембрана", damaged: "Увреден ооцит (твърде много засмукване)",
   no_breach: "Изтласкване без потвърден пробив", not_delivered: "Сперматозоидът не е вкаран", medium: "Твърде много среда",
   inj_height: "Иглата не е на екватора при влизане",
+  two_sperm: "Два сперматозоида в един ооцит", spilled: "Изгубен сперматозоид (излезе в средата)",
 };
 const newPen = stage => ({ stage, items: [], checks: 0 });
 function penalize(pen, key) {
@@ -969,7 +1015,7 @@ function avgLine(results, total) {
   // средно от всички клетки (незавършените са 0) и дали е над прага
   if (GAME.practice || !results.length) return "";
   const sum = results.reduce((a, r) => a + (r.score || 0), 0), avg = Math.round(sum / Math.max(total, results.length));
-  return `Средно: ${avg} / ${SCORE.start}, ${avg >= SCORE.pass ? "издържан" : "неиздържан"} (праг ${SCORE.pass})`;
+  return `Средно: ${avg} / ${SCORE.start} – ${gradeOf(avg)}, ${avg >= SCORE.pass ? "издържан" : "неиздържан"} (праг ${SCORE.pass})`;
 }
 // цял екран: влиза се с първото „Започни“ или с бутона; остава, докато не се излезе с Esc или бутона
 const fsActive = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
@@ -995,6 +1041,19 @@ const OBJ = [["4x", 0.3], ["10x", 0.75], ["20x", 1.5], ["40x", 2.6]];
 const OBJ2 = [...OBJ, ["40x × 1,5", 3.9]];
 const BASE_FOV = 390;
 let LIMIT = 60; const T_WARN = 20, T_CRIT = 10;
+// време по етапи (rules.ini [stageN] time_limit_s); по подразбиране по лекаря: сперматозоид до 2 мин, ооцит до 1 мин, цялата процедура под 5 мин
+const LIM = { 2: 120, 5: 300 };
+const lim = st => LIM[st] ?? LIMIT;
+function fmtLim(sec) { return sec % 60 === 0 && sec >= 120 ? `${sec / 60} минути` : sec === 60 ? "60 секунди" : `${sec} секунди`; }
+function updLimTexts() { document.querySelectorAll("[data-lim]").forEach(el => { el.textContent = fmtLim(lim(+el.dataset.lim)); }); }
+// клавишите се разпознават по мястото им на клавиатурата: работят и при включена кирилица
+function keyOf(e) {
+  const c = e.code || "";
+  if (/^Key[A-Z]$/.test(c)) return c.slice(3).toLowerCase();
+  if (/^Digit[0-9]$/.test(c)) return c.slice(5);
+  if (c === "Space") return " ";
+  return (e.key || "").toLowerCase();
+}
 let ORIENT_TOL_H = 0.5, TILT_TOL = 20;
 let CAPTURE = 30; const SUCTION_SPEED = 90;
 const STAGE_SPEED = 120, MAX_SPIN = Math.PI / 2, FINE = 0.2;
@@ -1073,7 +1132,7 @@ const S = {
 };
 const tipX = () => S.pip[0] + S.side * ZONA_OUT;   // върхът на holding пипетата; хванатата клетка е в S.pip
 const zOk2 = () => Math.abs(S.z - Z2_EQ) <= Z2_TOL;       // пипетата е на екватора на ооцита
-const limit = () => LIMIT * S.n;
+const limit = () => lim(3) * S.n;
 const heldCell = () => S.cells.find(c => c.held) || null;
 
 function placeCells(n) {
@@ -1434,7 +1493,7 @@ const noTarget = () => rateLimitedToast(["Няма клетка до пипет�
 
 document.addEventListener("keydown", e => {
   if (document.getElementById("stage").hidden) return;
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   if (helpIsOpen()) { if (k === "h" || k === "escape") { closeHelp(); e.preventDefault(); } return; }
   // Space и Enter не бива да „натискат“ и фокусирания бутон (иначе действието се удвоява)
   if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
@@ -1444,10 +1503,10 @@ document.addEventListener("keydown", e => {
   if (["1", "2", "3", "4", "5"].includes(k)) setObj(+k - 1);
   else if (k === "r") newSession();
   else if (k === "m") toggleHand();
-  else if (k === " ") toggleSuction();
+  else if (k === "g") toggleSuction();
   else if (k === "enter") { if (!$("result").hidden) newSession(); else check(); }
 });
-document.addEventListener("keyup", e => keys.delete(e.key.toLowerCase()));
+document.addEventListener("keyup", e => keys.delete(keyOf(e)));
 window.addEventListener("blur", () => { keys.clear(); S.holdDown = S.holdUp = false; });
 
 function keyControl(dt) {
@@ -1522,14 +1581,14 @@ function check() {
   const ss = S.session, lap = ss.t - ss.lapStart;
   c.done = true;
   c.doneIndex = S.cells.filter(x => x.done).length;
-  S.results.push({ n: S.results.length + 1, t: lap, ok: lap <= LIMIT, practice: GAME.practice, attempts: ss.attempts, err: ev.err, tilt: ev.tilt,
+  S.results.push({ n: S.results.length + 1, t: lap, ok: lap <= lim(3), practice: GAME.practice, attempts: ss.attempts, err: ev.err, tilt: ev.tilt,
                    score: penScore(S.pen, false), pen: S.pen });
   S.lastPen = S.pen; S.pen = newPen("s3");
   ss.lapStart = ss.t; ss.attempts = 0;
   showLastCheck("lastCheck", [S.n === 1 ? "Правилно!" : `Клетка ${c.doneIndex} е готова.`], true);
   $("toast").hidden = true;
   if (S.cells.every(x => x.done)) { ss.state = "done"; showResult(true, ev); }
-  else toast([`Клетка ${c.doneIndex} е готова за ${lap.toFixed(1)} s.`, "Изключи смукането, отмести блюдото и хвани следващата."], lap <= LIMIT ? "ok" : "warn", 3200);
+  else toast([`Клетка ${c.doneIndex} е готова за ${lap.toFixed(1)} s.`, "Изключи смукането, отмести блюдото и хвани следващата."], lap <= lim(3) ? "ok" : "warn", 3200);
   ui();
 }
 
@@ -1569,7 +1628,7 @@ help.addEventListener("click", e => { if (e.target === help) closeHelp(); });
 $("helpClose").onclick = closeHelp;
 $("btnHelp").onclick = () => (!$("stage1").hidden ? Q1open() : !$("stage5").hidden ? S5open() : !$("stage4").hidden ? U4open() : $("stage3").hidden ? openHelp() : S3open());
 $("btnMenu").onclick = () => showMenu();
-$("startStage2").onclick = () => { enterFS(); showStage(); };
+$("startStage2").onclick = () => { enterFS(); S.n = CNT.s3; showStage(); };
 $("rbMenu").onclick = () => showMenu();
 $("rbHelp").onclick = () => openHelp();
 document.querySelectorAll(".fsBtn").forEach(b => { b.onclick = () => (fsActive() ? exitFS() : enterFS()); });
@@ -1617,7 +1676,6 @@ function bindChoice(groupId, onPick) {
 }
 bindChoice("pickHand", v => { S.side = +v; });
 bindChoice("pickMode", v => { GAME.practice = v === "practice"; });
-bindChoice("pickCount", v => { S.n = +v; });
 
 function setMode(m) {
   S.mode = m;
@@ -1631,7 +1689,7 @@ function setMode(m) {
 }
 function updateWhere() {
   $("where").textContent = `Етап 3: ориентиране и хващане на ооцит (${S.n === 1 ? "1 ооцит" : S.n + " ооцита"}, ${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
-  $("title2").textContent = $("where").textContent + " · версия 4.6";
+  $("title2").textContent = $("where").textContent + " · версия 4.7";
 }
 function showMenu() {
   document.body.classList.remove("in-stage");
@@ -1672,7 +1730,7 @@ function showResult(ok, ev) {
   const good = S.results.filter(r => r.ok).length;
   if (S.n === 1) {
     const r = S.results[S.results.length - 1];
-    $("resTitle").textContent = ok ? `Правилно! Време: ${r.t.toFixed(1)} s` : `Времето изтече (${LIMIT} s)`;
+    $("resTitle").textContent = ok ? `Правилно! Време: ${r.t.toFixed(1)} s` : `Времето изтече (${lim(3)} s)`;
     $("resBody").innerHTML = ok
       ? `${GAME.practice ? "" : `<p><b>Точки: ${r.score} / ${SCORE.start}</b></p>`}<p>Отклонение на ориентацията: ${ev.err.toFixed(2)} ч (${(ev.err * 30).toFixed(0)}°)</p>
          <p>Телце извън фокус: ${Math.abs(ev.tilt).toFixed(0)}°</p><p>Опити: ${r.attempts}</p>`
@@ -1680,7 +1738,7 @@ function showResult(ok, ev) {
   } else {
     $("resTitle").textContent = ok ? `Капката е готова! ${done} клетки за ${ss.t.toFixed(1)} s` : `Времето за капката изтече (${limit()} s)`;
     $("resBody").innerHTML = ok
-      ? `<p>В срок (до ${LIMIT} s на клетка): ${good} от ${done}</p><p>Средно: ${(ss.t / Math.max(1, done)).toFixed(1)} s на клетка</p>`
+      ? `<p>В срок (до ${lim(3)} s на клетка): ${good} от ${done}</p><p>Средно: ${(ss.t / Math.max(1, done)).toFixed(1)} s на клетка</p>`
       : `<p>Готови клетки: ${done} от ${S.n}</p>`;
   }
   $("resTitle").className = ok ? "ok" : "bad";
@@ -1722,13 +1780,13 @@ function ui() {
   $("btnHand").disabled = S.session.state === "running";
   $("btnHand").title = S.session.state === "running" ? "Смяната на ръката започва ново упражнение" : "M";
   // таймер: голям брояч за текущата клетка
-  const ss = S.session, lapLeft = LIMIT - (ss.t - ss.lapStart);
+  const ss = S.session, lapLeft = lim(3) - (ss.t - ss.lapStart);
   const tEl = $("timer");
   $("timerTitle").textContent = GAME.practice ? "Време (упражнение)" : (S.n === 1 ? "Време за клетката" : "Време за текущата клетка");
   if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
   else if (GAME.practice) {                       // упражнение: брои нагоре, без лимит
     const lap = ss.t - ss.lapStart;
-    tEl.textContent = fmtT(lap); tEl.className = "timer " + (lap > LIMIT ? "warn" : "");
+    tEl.textContent = fmtT(lap); tEl.className = "timer " + (lap > lim(3) ? "warn" : "");
   } else {
     tEl.textContent = lapLeft >= 0 ? fmtT(lapLeft) : `+${(-lapLeft).toFixed(1)}`;
     tEl.className = "timer " + (lapLeft <= T_CRIT ? "crit" : lapLeft <= T_WARN ? "warn" : "");
@@ -1747,7 +1805,7 @@ function ui() {
     list.innerHTML = S.results.slice(-10).map(r =>
       `<li class="${r.ok ? "ok" : r.practice ? "warn" : "bad"}"><span>Клетка ${r.n}</span><span>${r.t.toFixed(1)} s${r.practice ? "" : `, ${r.score} т.`}</span></li>`).join("");
     $("inTime").textContent = avgLine(S.results, S.n > 1 && (ss.state === "done" || ss.state === "expired") ? S.n : S.results.length) ||
-      `До ${LIMIT} s: ${S.results.filter(r => r.ok).length} от ${S.results.length}`;
+      `До ${lim(3)} s: ${S.results.filter(r => r.ok).length} от ${S.results.length}`;
   } else {
     list.innerHTML = '<li class="empty">Още няма завършени клетки</li>';
     $("inTime").textContent = "";
@@ -2216,7 +2274,7 @@ function frame(now) {
         ss.t += dt;
         if (!GAME.practice && ss.t >= limit()) {
           ss.t = limit(); ss.state = "expired";
-          if (S.n === 1) S.results.push({ n: S.results.length + 1, t: LIMIT, ok: false, attempts: ss.attempts, score: 0 });
+          if (S.n === 1) S.results.push({ n: S.results.length + 1, t: lim(3), ok: false, attempts: ss.attempts, score: 0 });
           showResult(false);
         }
       }
@@ -2356,7 +2414,7 @@ function newDrop3() {
 }
 const insideList = () => T3.sperm.filter(s => s.inside).sort((a, b) => a.uHead - b.uHead);
 const insideSperm = () => insideList()[0] || null;              // най-близкият до върха
-const limit3 = () => LIMIT * T3.load;                           // по една минута на сперматозоид
+const limit3 = () => lim(2) * T3.load;                           // по една минута на сперматозоид
 function nearestFree(maxD = 70) {
   const tp = tip3(); let best = null, bd = maxD;
   for (const s of T3.sperm) {
@@ -2560,7 +2618,7 @@ cv3.addEventListener("wheel", e => {
 const keys3 = new Set();
 document.addEventListener("keydown", e => {
   if ($("stage3").hidden) return;
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   if (!$("help3").hidden) { if (k === "h" || k === "escape") { S3close(); e.preventDefault(); } return; }
   if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
   keys3.add(k);
@@ -2571,7 +2629,7 @@ document.addEventListener("keydown", e => {
   else if (k === "m") toggleHand3();
   else if (k === "enter") { if (!$("result3").hidden) newDrop3(); else check3(); }
 });
-document.addEventListener("keyup", e => keys3.delete(e.key.toLowerCase()));
+document.addEventListener("keyup", e => keys3.delete(keyOf(e)));
 window.addEventListener("blur", () => { keys3.clear(); T3.holdAsp = T3.holdExp = T3.holdDown = T3.holdUp = false; });
 
 function holdButton(el, prop) {
@@ -2641,29 +2699,10 @@ function S3open() {
 }
 function S3close() { $("help3").hidden = true; T3.paused = false; }
 window.S3open = S3open;
-function spSet(n) {
-  // в капката винаги повече, отколкото ще влязат в иглата, за да има избор
-  T3.n = Math.max(C3.SPERM_MIN, T3.load + 1, Math.min(C3.SPERM_MAX, n)); $("spOut").textContent = T3.n; updLoadUI();
-}
-function updLoadUI() {
-  const show = C3.LOAD_MAX > 1;
-  document.querySelectorAll("[data-load]").forEach(el => { el.hidden = !show; });
-  if (!show) { T3.load = 1; return; }
-  T3.load = Math.min(T3.load, C3.LOAD_MAX);
-  $("pickLoad").querySelectorAll(".btn").forEach(b => {
-    const v = +b.dataset.v;
-    b.hidden = v > C3.LOAD_MAX;
-    b.disabled = v > T3.n - 1;                         // не повече, отколкото има в капката
-    b.setAttribute("aria-pressed", v === T3.load);
-  });
-}
-$("pickLoad").querySelectorAll(".btn").forEach(b => { b.onclick = () => { if (b.disabled) return; T3.load = +b.dataset.v; spSet(T3.n); }; });
-updLoadUI();
-$("spMinus").onclick = () => spSet(T3.n - 1);
-$("spPlus").onclick = () => spSet(T3.n + 1);
+function updLoadUI() { renderCnt(); }                 // числата в менюто: виж CNT
 function where3() {
   $("where").textContent = `Етап 2: сперматозоидът (${T3.n} сперматозоида${T3.load > 1 ? `, ${T3.load} в иглата` : ""}, ${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
-  $("title3").textContent = $("where").textContent + " · версия 4.6";
+  $("title3").textContent = $("where").textContent + " · версия 4.7";
 }
 $("rb3Menu").onclick = () => showMenu();
 $("rb3Help").onclick = () => S3open();
@@ -2672,6 +2711,7 @@ $("startStage3").onclick = () => {
   document.body.classList.add("in-stage");
   $("menu").hidden = true; $("stage").hidden = true; $("stage3").hidden = false; $("stage4").hidden = true; $("stage5").hidden = true; $("stage1").hidden = true;
   $("btnMenu").hidden = false; $("btnHelp").hidden = false;
+  T3.n = CNT.s2; T3.load = CNT.s2load;
   T3.results = []; where3(); resize3(); newDrop3(); S3open();
 };
 
@@ -2892,7 +2932,7 @@ const C4 = {
   ZONA_BREAK: 10, MEM_BREAK: 6, LYSIS: 35, MEDIUM_TOL: 20, HEIGHT_TOL: 10,        // rules.ini [stage4]
   FLOW_MAX: 22, TAU: 0.35, PIP_SPEED: 60, Z_SPEED: 30, SPERM_U: 6,          // сперматозоидът е докаран до върха
 };
-const U = { paused: true, obj: 3, results: [] };
+const U = { paused: true, obj: 3, results: [], n: 1, load: 1, queue: [] };      // n: ооцити в серията; load: в иглата
 let W4 = 1, H4 = 1, ctx4 = null, toast4Timer = 0, pend4 = [0, 0];
 const keys4 = new Set();
 const sd4 = () => -S.side;                               // откъде идва иглата: +1 отдясно (десняк)
@@ -2909,7 +2949,16 @@ function newCell4() {
   U.zona = { pierced: false, dent: 0, ang: sd > 0 ? 0 : Math.PI };
   U.mem = { broken: false, inv: 0, asp: 0, ang: U.zona.ang };
   U.cyto = 0; U.flow = 0; U.medIn = 0;
-  U.sperm = { u: C4.SPERM_U, out: false, loc: null, pos: null };
+  U.poly = false;
+  if (U.n > 1 && U.results.length >= U.n) { U.results = []; U.queue = []; }      // серията е завършена: нова
+  if (U.queue.length) {                                  // следващият от иглата
+    const q = U.queue.shift(); U.sperm = { u: q.u, out: false, loc: null, pos: null };
+    if (q.u > 15) setTimeout(() => toast4([`Следващият сперматозоид е на ${q.u.toFixed(0)} µm от върха.`, "Преди да влезеш в ооцита, изтласкай леко навън, докато дойде до върха."], "info", 4200), 900);
+  } else {                                               // зареждане: по един за всеки оставащ ооцит, до избрания брой
+    const left = Math.max(1, U.n - U.results.length), m = Math.max(1, Math.min(U.load, left));
+    U.sperm = { u: C4.SPERM_U, out: false, loc: null, pos: null };
+    U.queue = Array.from({ length: m - 1 }, (_, i) => ({ u: C4.SPERM_U + 28 * (i + 1) }));
+  }
   U.opposite = false; U.damaged = false; U.heightWarn = 0; U.inside = false; U.withdrawn = false;
   U.pb = Math.random() < 0.5 ? 12 : 6;
   U.cell = makeCell([0, 0], 900); U.cell.q = U.pb === 6 ? [1, 0, 0, 0] : qAxisAngle([0, 0, 1], Math.PI); U.cell.M = qMat(U.cell.q);
@@ -2918,9 +2967,23 @@ function newCell4() {
   $("result4").hidden = true; $("toast4").hidden = true; showLastCheck("lastCheck4", null);
   where4(); ui4();
 }
+function newSeries4() { U.results = []; U.queue = []; newCell4(); }
+function queueStep4(delta) {
+  // чакащите в иглата се движат с течността; излязъл, докато иглата е в ооцит с вече инжектиран - два в един ооцит
+  if (!U.queue.length || !delta) return;
+  for (const q of U.queue) q.u -= delta;
+  while (U.queue.length && U.queue[0].u <= 0) {
+    U.queue.shift();
+    const r = Math.hypot(U.tip[0], U.tip[1]);
+    if (U.zona.pierced && r < C4.ZONA_OUT && U.sperm.out) {
+      U.poly = true; penalize(U.pen, "two_sperm");
+      toast4(["Втори сперматозоид влезе в същия ооцит!", "Два сперматозоида в един ооцит: клетката е 0 точки."], "err", 4200);
+    } else { penalize(U.pen, "spilled"); toast4(["Сперматозоид излезе от иглата в средата и е изгубен."], "warn", 3000); }
+  }
+}
 function where4() {
-  $("where").textContent = `Етап 4: инжектиране (${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
-  $("title4").textContent = $("where").textContent + " · версия 4.6";
+  $("where").textContent = `Етап 4: инжектиране (${U.n > 1 ? `${U.n} ооцита, ` : ""}${U.load > 1 ? `${U.load} в иглата, ` : ""}${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
+  $("title4").textContent = $("where").textContent + " · версия 4.7";
 }
 function start4() { if (U.session.state === "ready") U.session.state = "running"; }
 function toast4(lines, kind, ms) {
@@ -3040,22 +3103,26 @@ function check4() {
   const notes = [];
   if (U.medIn > C4.MEDIUM_TOL) { penalize(U.pen, "medium"); notes.push(`Внимание: в ооцита влезе твърде много среда (${Math.round(U.medIn)} µm, до ${C4.MEDIUM_TOL}).`); }
   if (U.opposite) notes.push("Внимание: беше пробита и отсрещната мембрана.");
+  if (U.poly) notes.push("Два сперматозоида в един ооцит: клетката е 0 точки.");
   if (U.damaged) notes.push("Внимание: засмукана беше твърде много цитоплазма.");
   showLastCheck("lastCheck4", ["Правилно!", ...notes], true);
-  U.results.push({ n: U.results.length + 1, t: U.session.t, ok: U.session.t <= LIMIT, done: true, practice: GAME.practice,
+  U.results.push({ n: U.results.length + 1, t: U.session.t, ok: U.session.t <= lim(4), done: true, practice: GAME.practice,
                    attempts: U.session.attempts, score: penScore(U.pen, false) });
   showResult4(true, notes);
   ui4();
 }
 function showResult4(ok, notes = []) {
-  $("res4Title").textContent = ok ? `Готово! Време: ${U.session.t.toFixed(1)} s` : `Времето изтече (${LIMIT} s)`;
+  $("res4Title").textContent = ok ? `Готово! Време: ${U.session.t.toFixed(1)} s` : `Времето изтече (${lim(4)} s)`;
   $("res4Title").className = ok ? "ok" : "bad";
   $("res4Body").innerHTML = ok
     ? `${GAME.practice ? "" : `<p><b>Точки: ${penScore(U.pen, false)} / ${SCORE.start}</b></p>`}<p>Сперматозоидът е в цитоплазмата, иглата е изтеглена.</p>
        <p>Среда в ооцита: ${Math.round(U.medIn)} µm</p>${notes.map(n => `<p>${n}</p>`).join("")}<p>Проверки: ${U.session.attempts}</p>`
     : `<p>Инжектирането не е завършено навреме.</p>`;
+  const fin = U.n > 1 && U.results.length >= U.n;        // серията е завършена
+  if (U.n > 1) $("res4Body").innerHTML += `<p><b>Серия: ${Math.min(U.results.length, U.n)} от ${U.n} ооцита.</b></p>` + (fin && !GAME.practice ? `<p><b>${avgLine(U.results, U.n)}</b></p>` : "");
+  $("res4Next").textContent = fin ? "Нова серия" : U.n > 1 ? "Следваща клетка" : "Нова клетка";
   $("result4").hidden = false;
-  if (ok) startAutoNext("s4", "res4Auto", "Следващата клетка", newCell4);
+  if (ok && !fin) startAutoNext("s4", "res4Auto", "Следващата клетка", newCell4);
   else $("res4Auto").hidden = true;
 }
 
@@ -3063,17 +3130,18 @@ function showResult4(ok, notes = []) {
 function set4(id, text, cls) { const el = $(id); el.textContent = text; el.className = cls || ""; }
 function ui4() {
   if (!U.session) return;
-  const ss = U.session, rem = Math.max(0, LIMIT - ss.t), tEl = $("timer4");
-  $("timerTitle4").textContent = GAME.practice ? "Време (упражнение)" : "Време";
+  const ss = U.session, rem = Math.max(0, lim(4) - ss.t), tEl = $("timer4");
+  $("timerTitle4").textContent = (GAME.practice ? "Време (упражнение)" : "Време") + (U.n > 1 ? ` · клетка ${Math.min(U.results.length + (ss.state === "done" || ss.state === "expired" ? 0 : 1), U.n)} от ${U.n}` : "");
+  $("btnNew4").textContent = U.n > 1 ? "Нова серия" : "Нова клетка";
   if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
-  else if (GAME.practice) { tEl.textContent = fmtT(ss.t); tEl.className = "timer " + (ss.t > LIMIT ? "warn" : ""); }
+  else if (GAME.practice) { tEl.textContent = fmtT(ss.t); tEl.className = "timer " + (ss.t > lim(4) ? "warn" : ""); }
   else { tEl.textContent = fmtT(rem); tEl.className = "timer " + (rem <= T_CRIT ? "crit" : rem <= T_WARN ? "warn" : ""); }
   $("tstatus4").textContent = { ready: "Тръгва при първото действие", running: GAME.practice ? `Упражнение, без лимит. Проверки: ${ss.attempts}` : `Тече. Проверки: ${ss.attempts}`,
     done: "Клетката е готова", expired: "Времето изтече" }[ss.state];
   renderPen(U.pen, "errs4", "score4", ss.state === "expired");
   const zok = Math.abs(U.z - C4.EQ) <= C4.HEIGHT_TOL;
   set4("w4Z", `${U.z.toFixed(0)} µm${zok ? " (екватор)" : ""}`, zok ? "ok" : "");
-  set4("w4Sp", U.sperm.out ? { ooplasm: "в цитоплазмата", pvs: "под мембраната", out: "извън ооцита" }[U.sperm.loc] : `в иглата, ${Math.max(0, U.sperm.u).toFixed(0)} µm от върха`,
+  set4("w4Sp", (U.sperm.out ? { ooplasm: "в цитоплазмата", pvs: "под мембраната", out: "извън ооцита" }[U.sperm.loc] : `в иглата, ${Math.max(0, U.sperm.u).toFixed(0)} µm от върха`) + (U.queue.length ? ` (+${U.queue.length} чакат)` : ""),
        U.sperm.out ? (U.sperm.loc === "ooplasm" ? "ok" : "bad") : "");
   set4("w4Cy", `${U.cyto.toFixed(0)} µm`, U.cyto > C4.LYSIS * 0.7 ? "bad" : "");
   set4("w4Flow", U.flow < -0.5 ? "засмуква" : U.flow > 0.5 ? "изтласква" : "няма");
@@ -3134,7 +3202,7 @@ function drawNeedle4(g, s) {
   // общата игла; размазана, ако не е на височината на фокуса; с цитоплазмата и сперматозоида вътре
   const [tx, ty] = w2s4(U.tip[0], U.tip[1]);
   drawNeedle(g, { tx, ty, sd: sd4(), s, blur: Math.min(1, Math.abs(U.z - FOCUS4) / 25), W: W4, cyto: U.cyto,
-                  sperm: !U.sperm.out && !U.sperm.none ? U.sperm.u : null });
+                  sperm: [...(!U.sperm.out && !U.sperm.none ? [U.sperm.u] : []), ...U.queue.map(q => q.u)] });
 }
 function vignetteScale4(g, s) {
   // мащаб и леко потъмняване към краищата
@@ -3180,7 +3248,7 @@ function hold4(el, prop) {
 hold4($("btnDown4"), "holdDown"); hold4($("btnUp4"), "holdUp"); hold4($("btnAsp4"), "holdAsp"); hold4($("btnExp4"), "holdExp");
 $("obj4Minus").onclick = () => setObj4(U.obj - 1); $("obj4Plus").onclick = () => setObj4(U.obj + 1);
 $("btnCheck4").onclick = () => check4();
-$("btnNew4").onclick = () => newCell4();
+$("btnNew4").onclick = () => newSeries4();
 $("res4Next").onclick = () => newCell4();
 $("rb4Menu").onclick = () => showMenu();
 $("rb4Help").onclick = () => U4open();
@@ -3192,24 +3260,24 @@ function U4close() { $("help4").hidden = true; U.paused = false; }
 $("help4Close").onclick = () => U4close();
 document.addEventListener("keydown", e => {
   if ($("stage4").hidden) return;
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   if (!$("help4").hidden) { if (k === "h" || k === "escape") { U4close(); e.preventDefault(); } return; }
   if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
   if (k === "h") { U4open(); return; }
   keys4.add(k);
   if (e.repeat) return;
   if (["1", "2", "3", "4", "5"].includes(k)) setObj4(+k - 1);
-  else if (k === "r") newCell4();
+  else if (k === "r") newSeries4();
   else if (k === "enter") { if (!$("result4").hidden) newCell4(); else check4(); }
 });
-document.addEventListener("keyup", e => keys4.delete(e.key.toLowerCase()));
+document.addEventListener("keyup", e => keys4.delete(keyOf(e)));
 $("startStage4").onclick = () => {
   enterFS();
   document.body.classList.add("in-stage");
   $("menu").hidden = true; $("stage").hidden = true; $("stage3").hidden = true; $("stage4").hidden = false; $("stage5").hidden = true; $("stage1").hidden = true; TOAST4 = "toast4";
   $("btnMenu").hidden = false; $("btnHelp").hidden = false;
   if (window.T3) T3.paused = true; S.paused = true;
-  U.results = []; resize4(); newCell4(); U4open();
+  U.n = CNT.s4; U.load = CNT.s4load; U.results = []; U.queue = []; resize4(); newCell4(); U4open();
 };
 
 /* ---------------- цикъл */
@@ -3227,13 +3295,18 @@ function frame4(now) {
       const dz = ((keys4.has("u") || U.holdUp) ? 1 : 0) - ((keys4.has("o") || U.holdDown) ? 1 : 0);
       if (dz) { start4(); U.z = Math.max(0, Math.min(160, U.z + dz * C4.Z_SPEED * fine * dt)); }
     }
-    flow4(dt);
+    flow4(dt); queueStep4(U.lastCol);
+    if (U.sperm.out && U.sperm.loc === "out" && U.queue.length && accepts4()) {      // изтласкан в средата: изгубен, следващият
+      penalize(U.pen, "spilled");
+      const q = U.queue.shift(); U.sperm = { u: q.u, out: false, loc: null, pos: null };
+      toast4(["Сперматозоидът излезе в средата и е изгубен.", "В иглата има още: продължи със следващия."], "warn", 3200);
+    }
     const ss = U.session;
     if (ss.state === "running" && !U.paused) {
       ss.t += dt;
-      if (!GAME.practice && ss.t >= LIMIT) {
-        ss.t = LIMIT; ss.state = "expired";
-        U.results.push({ n: U.results.length + 1, t: LIMIT, ok: false, attempts: ss.attempts, score: 0 });
+      if (!GAME.practice && ss.t >= lim(4)) {
+        ss.t = lim(4); ss.state = "expired";
+        U.results.push({ n: U.results.length + 1, t: lim(4), ok: false, attempts: ss.attempts, score: 0 });
         showResult4(false);
       }
     }
@@ -3278,7 +3351,7 @@ function placeOocytes5(n) {
   }
   return out;
 }
-const limit5 = () => LIMIT * S5.n;                        // общо: по една минута на клетка
+const limit5 = () => lim(5) * S5.n;                        // общо: по една минута на клетка
 function resetPart5() {
   // следващата клетка: нов сперматозоид, ново инжектиране, нови точки
   S5.phase = "pvp"; S5.spermInfo = null;
@@ -3324,7 +3397,7 @@ function newCell5() {
   S5.F = 0;                                              // започва в PVP: фокусът на дъното
   // ново упражнение: цялото блюдо отначало
   stopAutoNext("s5");
-  S5.n = Math.max(1, Math.min(8, S.n || 1));
+  S5.n = CNT.s5;
   S5.session = { t: 0, state: "ready", attempts: 0, lap: 0 };
   S5.results = [];
   S5.D = [0, 0]; S5.N = [sd4() * 40, 0]; S5.Z = 4; pend5 = [0, 0];
@@ -3332,7 +3405,7 @@ function newCell5() {
   S5.cells = placeOocytes5(S5.n);
   // двигателят на етап 2 (сперматозоидите)
   // в капката: поне по един годен сперматозоид за всеки ооцит
-  T3.n = T3.n || 14; T3.sperm = makeSperm(Math.max(T3.n, S5.n + 2), Math.max(4, S5.n, T3.load)); T3.t = 0; T3.cam = [...S5.D]; T3.off = [...S5.N]; T3.prevTip = tip3();
+  T3.n = CNT.s5sperm; T3.load = CNT.s5load; T3.sperm = makeSperm(Math.max(T3.n, S5.n + 2), Math.max(4, S5.n, T3.load)); T3.t = 0; T3.cam = [...S5.D]; T3.off = [...S5.N]; T3.prevTip = tip3();
   S5.queue = [];
   T3.z = S5.Z; T3.flow = 0; T3.bottomDrag = 0; T3.session = S5.session; T3.paused = false;
   // двигателят на етап 4 (zona, мембрана, инжектор); ооцитът е този, който е хванат
@@ -3343,7 +3416,7 @@ function newCell5() {
 }
 function where5() {
   $("where").textContent = `Етап 5: цялата процедура (${S.side < 0 ? "десняк" : "левак"}${GAME.practice ? ", упражнение" : ""})`;
-  $("title5").textContent = $("where").textContent + " · версия 4.6";
+  $("title5").textContent = $("where").textContent + " · версия 4.7";
 }
 function start5() { if (S5.session.state === "ready") S5.session.state = "running"; }
 function toast5(lines, kind, ms) {
@@ -3506,7 +3579,7 @@ function check5() {
   const sp = penScore(T3.pen, false), ori = penScore(S5.penO, false), inj = penScore(U.pen, false), cell = cellScore5(false);
   const o = S5.heldCell; o.done = true; o.doneIndex = S5.results.length + 1;
   const t = S5.session.t - (S5.session.lap || 0);
-  S5.results.push({ n: o.doneIndex, t, ok: t <= LIMIT, done: true, practice: GAME.practice, score: cell, sp, ori, inj, poly: S5.poly });
+  S5.results.push({ n: o.doneIndex, t, ok: t <= lim(5), done: true, practice: GAME.practice, score: cell, sp, ori, inj, poly: S5.poly });
   release5();
   showLastCheck("lastCheck5", [S5.poly ? `Клетка ${o.doneIndex} от ${S5.n} е завършена, но с 0 точки.` : `Правилно! Клетка ${o.doneIndex} от ${S5.n} е готова.`, ...notes5], !S5.poly);
   if (S5.results.length >= S5.n) { S5.session.state = "done"; $("toast5").hidden = true; showReport5(false); }
@@ -3680,7 +3753,7 @@ function S5close() { $("help5").hidden = true; S5.paused = false; }
 $("help5Close").onclick = () => S5close();
 document.addEventListener("keydown", e => {
   if ($("stage5").hidden) return;
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   if (!$("help5").hidden) { if (k === "h" || k === "escape") { S5close(); e.preventDefault(); } return; }
   if ([" ", "enter", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
   if (k === "h") { S5open(); return; }
@@ -3691,7 +3764,7 @@ document.addEventListener("keydown", e => {
   else if (k === "g") toggleHold5();
   else if (k === "enter") { if (!$("result5").hidden) newCell5(); else check5(); }
 });
-document.addEventListener("keyup", e => keys5.delete(e.key.toLowerCase()));
+document.addEventListener("keyup", e => keys5.delete(keyOf(e)));
 $("startStage5").onclick = () => {
   enterFS();
   document.body.classList.add("in-stage");
@@ -3762,15 +3835,44 @@ const ANOM1 = { b: "Вакуола", c: "Гранулирана цитоплаз
   g: "Рефрактилно телце", h: "Овална zona", i: "Частици в PVS", j: "Голямо PVS", k: "Дебела zona", l: "Голямо полярно телце",
   m: "Малко полярно телце", n: "Фрагментирано полярно телце" };
 const MAT1 = { MII: "MII", MI: "MI", GV: "GV", DEG: "дегенериран" };
-const C1 = { IMMATURE: 0.2, DEGEN: 0.08, CLEAN: 0.31, DROP_R: 700, STAGE_SPEED: 400 };     // rules.ini [stage1]
-const Q = { obj: 1, D: [0, 0], items: [], sel: -1, paused: true, results: [] };
+// DROP_R: капката на етап 1 е по-голяма, за да са ооцитите раздалечени и на 20x да се вижда по един (4.7)
+const C1 = { IMMATURE: 0.2, DEGEN: 0.08, CLEAN: 0.31, DROP_R: 1150, STAGE_SPEED: 400, COUNT: 10, MAXN: 12, GAP: 380 };     // rules.ini [stage1]
+const Q = { obj: 2, D: [0, 0], items: [], sel: -1, paused: true, results: [] };
+// подсказки „на какво да се гледа“ (бутон „Покажи отговора“, само в режим „Упражнение“); текстовете - за потвърждение от биолозите
+const HINT_MAT1 = {
+  MII: "Зрял: има полярно телце в пространството под zona; не се вижда ядро.",
+  MI: "Незрял (MI): няма полярно телце и не се вижда ядро.",
+  GV: "Незрял (GV): в цитоплазмата се вижда голямо кръгло ядро (зародишен мехур).",
+  DEG: "Дегенериран: тъмна, свита или разпадаща се цитоплазма.",
+};
+const HINT_ANOM1 = {
+  b: "кръгло прозрачно мехурче в цитоплазмата", c: "груба зърнистост на цитоплазмата, често по-тъмен център",
+  d: "цялата цитоплазма е по-тъмна от обичайното", e: "плосък гладък диск в цитоплазмата",
+  f: "очертанието на цитоплазмата не е гладко и кръгло", g: "малко ярко, пречупващо светлината телце в цитоплазмата",
+  h: "zona pellucida е овална, а не кръгла", i: "зърна или отломки между мембраната и zona",
+  j: "широко пространство между цитоплазмата и zona", k: "zona pellucida е по-дебела от обичайното",
+  l: "полярното телце е необичайно голямо", m: "полярното телце е необичайно малко", n: "полярното телце е разпаднато на части",
+};
+// скала за оценка: [от колко точки нагоре, име]; rules.ini [grades]
+let GRADES = [[95, "Отличен 6"], [87, "Много добър 5"], [79, "Добър 4"], [70, "Среден 3"], [0, "Слаб 2"]];
+function gradeOf(points) { for (const [min, name] of GRADES) if (points >= min) return name; return ""; }
+
 let W1 = 1, H1 = 1, ctx1 = null, imgs1 = {}, toast1Timer = 0;
 for (const [k, v] of Object.entries(ST1_SPRITES)) { const im = new Image(); im.src = v.src; imgs1[k] = im; }
 const scale1 = () => OBJ2[Q.obj][1] * (W1 / FIELD_REF);
 const v2s1 = (x, y) => [W1 / 2 + (x - Q.D[0]) * scale1(), H1 / 2 + (y - Q.D[1]) * scale1()];
-const accepts1 = () => !Q.paused && (Q.session.state === "ready" || Q.session.state === "running");
-const limit1 = () => LIMIT * Q.items.length;
-function start1() { if (Q.session.state === "ready") Q.session.state = "running"; }
+const accepts1 = () => !Q.paused && Q.session.state === "running";
+const limit1 = () => lim(1) * Q.items.length;
+function start1() { /* хронометърът тръгва само от бутона „Старт“ (4.7) */ }
+function go1() {
+  if (!Q.session || Q.session.state !== "ready") return;
+  Q.session.state = "running"; $("start1").hidden = true; lock1(); select1(Q.sel);
+}
+function lock1() {
+  const locked = !Q.session || Q.session.state === "ready";
+  $("q1Work").classList.toggle("locked", locked); $("q1Left").classList.toggle("locked", locked); $("btnCheck1").disabled = locked;
+  $("obj1Minus").disabled = locked; $("obj1Plus").disabled = locked;
+}
 function toast1(lines, kind, ms) {
   const t = $("toast1"); t.innerHTML = lines.map(l => `<div>${l}</div>`).join(""); t.className = "toast " + (kind === "err" ? "" : kind);
   t.hidden = false; clearTimeout(toast1Timer); toast1Timer = setTimeout(() => { t.hidden = true; }, ms || 3000);
@@ -3784,39 +3886,90 @@ function makeItem1() {
     if (Math.random() < C1.CLEAN) key = Math.random() < 0.5 ? "MII" : "A_a";
     else { const ks = Object.keys(ANOM1), a = ks[Math.floor(Math.random() * ks.length)]; key = "A_" + a; anom = [a]; }
   }
-  return { key, mat, anom, rot: Math.random() * 2 * Math.PI, flip: Math.random() < 0.5, ans: { mat: null, anom: new Set(), none: false } };
+  return { key, mat, anom, rot: Math.random() * 2 * Math.PI, flip: Math.random() < 0.5, ans: { mat: null, anom: new Set(), none: false }, ok: false, shown: false };
 }
 function newEx1() {
-  const n = Math.max(1, Math.min(8, S.n || 1));
+  const n = Math.max(1, Math.min(C1.MAXN, CNT.s1));
   Q.items = [];
-  for (let k = 0; k < 6000 && Q.items.length < n; k++) {
-    const rr = (C1.DROP_R - 170) * Math.sqrt(Math.random()), a = Math.random() * 2 * Math.PI, p = [rr * Math.cos(a), rr * Math.sin(a)];
-    if (Q.items.some(o => Math.hypot(o.pos[0] - p[0], o.pos[1] - p[1]) < 2 * ZONA_OUT + 50)) continue;
-    Q.items.push({ ...makeItem1(), pos: p });
+  // раздалечени ооцити; ако не се поберат, разстоянието постепенно намалява
+  for (let gap = C1.GAP; Q.items.length < n && gap >= 2 * ZONA_OUT + 20; gap -= 40) {
+    for (let k = 0; k < 4000 && Q.items.length < n; k++) {
+      const rr = (C1.DROP_R - 170) * Math.sqrt(Math.random()), a = Math.random() * 2 * Math.PI, p = [rr * Math.cos(a), rr * Math.sin(a)];
+      if (Q.items.some(o => Math.hypot(o.pos[0] - p[0], o.pos[1] - p[1]) < gap)) continue;
+      Q.items.push({ ...makeItem1(), pos: p });
+    }
   }
+  // номерата вървят отляво надясно, отгоре надолу - по-лесно се намират
+  Q.items.sort((a, b) => (Math.round(a.pos[1] / 300) - Math.round(b.pos[1] / 300)) || (a.pos[0] - b.pos[0]));
   Q.items.forEach((o, i) => { o.no = i + 1; });
-  Q.D = [...Q.items[0].pos]; Q.sel = 0; Q.session = { t: 0, state: "ready" };
+  Q.obj = 2; Q.D = [...Q.items[0].pos]; Q.sel = 0; Q.session = { t: 0, state: "ready" };
   $("result1").hidden = true; $("toast1").hidden = true;
-  where1(); panel1(); ui1();
+  $("start1Info").textContent = `${Q.items.length} ${Q.items.length === 1 ? "ооцит" : "ооцита"} · ` +
+    (GAME.practice ? "упражнение, без лимит" : `${limit1()} s за всички`);
+  $("start1").hidden = false;
+  buildStrip1(); where1(); panel1(); lock1(); ui1();
 }
 function where1() {
   $("where").textContent = `Етап 1: преценка на ооцитите (${Q.items.length} ${Q.items.length === 1 ? "ооцит" : "ооцита"}${GAME.practice ? ", упражнение" : ""})`;
-  $("title1").textContent = $("where").textContent + " · версия 4.6";
+  $("title1").textContent = $("where").textContent + " · версия 4.7";
 }
 /* ---------------- оценката в дясната лента */
 (function buildAnom1() {
   $("q1Anom").innerHTML = Object.entries(ANOM1).map(([k, v]) => `<label class="anom"><input type="checkbox" data-a="${k}"> ${v}</label>`).join("");
 })();
+function buildStrip1() {
+  $("q1Strip").innerHTML = Q.items.map((o, i) => `<button class="btn" data-i="${i}" title="Ооцит ${o.no}">${o.no}</button>`).join("");
+}
+$("q1Strip").addEventListener("click", e => { const b = e.target.closest(".btn"); if (b && accepts1()) select1(+b.dataset.i); });
+function strip1() {
+  $("q1Strip").querySelectorAll(".btn").forEach(b => {
+    const o = Q.items[+b.dataset.i]; if (!o) return;
+    b.setAttribute("aria-pressed", +b.dataset.i === Q.sel);
+    b.classList.toggle("done", o.ok); b.classList.toggle("seen", !o.ok && answered1(o));
+    b.textContent = o.ok ? `${o.no}✓` : String(o.no);
+  });
+}
 function panel1() {
   const o = Q.items[Q.sel];
   $("q1Panel").hidden = !o;
-  $("q1SelTitle").textContent = o ? `Ооцит ${o.no} от ${Q.items.length}` : "Избери ооцит";
+  $("q1SelTitle").textContent = o ? `Ооцит ${o.no} от ${Q.items.length}${o.ok ? " ✓" : ""}` : "Избери ооцит";
+  strip1();
   if (!o) return;
   $("q1Mat").querySelectorAll(".btn").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === o.ans.mat));
+  // аномалиите се показват само при MII - иначе са скрити, за да не подвеждат
+  $("q1AnomBox").hidden = o.ans.mat !== "MII";
   $("q1None").checked = o.ans.none;
   $("q1Anom").querySelectorAll("input").forEach(c => { c.checked = o.ans.anom.has(c.dataset.a); });
+  $("btnShow1").hidden = !GAME.practice;
+  showAnswer1(o.shown);
 }
-$("q1Mat").querySelectorAll(".btn").forEach(b => { b.onclick = () => { const o = Q.items[Q.sel]; if (!o || !accepts1()) return; start1(); o.ans.mat = b.dataset.v; panel1(); ui1(); }; });
+function showAnswer1(on) {
+  const o = Q.items[Q.sel], box = $("answer1");
+  if (!o || !on) { box.hidden = true; return; }
+  const parts = [`<p><b>Вярно: ${MAT1[o.mat]}${o.mat === "MII" ? (o.anom.length ? " – " + o.anom.map(a => ANOM1[a].toLowerCase()).join(", ") : ", без аномалии") : ""}</b></p>`,
+    `<p class="hint">${HINT_MAT1[o.mat]}</p>`];
+  for (const a of o.anom) parts.push(`<p class="hint">${ANOM1[a]}: ${HINT_ANOM1[a]}.</p>`);
+  box.innerHTML = parts.join(""); box.hidden = false;
+}
+$("btnShow1").onclick = () => { const o = Q.items[Q.sel]; if (!o || !accepts1() || !GAME.practice) return; o.shown = true; showAnswer1(true); };
+function done1() {
+  const o = Q.items[Q.sel]; if (!o || !accepts1()) return;
+  if (!answered1(o)) {
+    toast1([o.ans.mat ? "Отбележи аномалиите или „Без аномалии“." : "Първо избери зрялостта."], "warn", 2600); return;
+  }
+  o.ok = true;
+  const n = Q.items.length, next = [...Array(n).keys()].map(k => (Q.sel + 1 + k) % n).find(i => !Q.items[i].ok);
+  if (next === undefined) { check1(false); return; }
+  select1(next);
+}
+$("btnDone1").onclick = () => done1();
+$("btnStart1").onclick = () => go1();
+$("q1Mat").querySelectorAll(".btn").forEach(b => { b.onclick = () => {
+  const o = Q.items[Q.sel]; if (!o || !accepts1()) return;
+  o.ans.mat = b.dataset.v;
+  if (o.ans.mat !== "MII") { o.ans.anom.clear(); o.ans.none = false; }   // смяна от MII: аномалиите се изчистват
+  panel1(); ui1();
+}; });
 $("q1None").onchange = e => { const o = Q.items[Q.sel]; if (!o || !accepts1()) { panel1(); return; } start1(); o.ans.none = e.target.checked; if (o.ans.none) o.ans.anom.clear(); panel1(); ui1(); };
 $("q1Anom").addEventListener("change", e => {
   const o = Q.items[Q.sel], a = e.target.dataset.a; if (!o || !a) return;
@@ -3825,6 +3978,7 @@ $("q1Anom").addEventListener("change", e => {
 });
 const answered1 = o => !!o.ans.mat && (o.ans.mat !== "MII" || o.ans.none || o.ans.anom.size > 0);
 function select1(i) { Q.sel = i; const o = Q.items[i]; if (o) Q.D = [...o.pos]; panel1(); }
+// оценка и отчет: всеки ооцит носи и дали е показан отговорът
 /* ---------------- проверка и отчет */
 function score1(o) {
   const T = SCORE.s1, lost = [];
@@ -3851,14 +4005,14 @@ function check1(expired) {
     const r = score1(o), ans = o.ans.mat ? MAT1[o.ans.mat] + (o.ans.mat === "MII" ? (o.ans.anom.size ? ": " + [...o.ans.anom].map(a => ANOM1[a].toLowerCase()).join(", ") : ", без аномалии") : "") : "–";
     const truth = MAT1[o.mat] + (o.mat === "MII" ? (o.anom.length ? ": " + o.anom.map(a => ANOM1[a].toLowerCase()).join(", ") : ", без аномалии") : "");
     o.score = r.score;
-    return `<tr><td>${o.no}</td><td>${ans}</td><td>${truth}</td>${GAME.practice ? "" : `<td><b>${r.score}</b></td>`}</tr>`;
+    return `<tr><td>${o.no}</td><td>${ans}${o.shown ? " <small>(показан отговор)</small>" : ""}</td><td>${truth}</td>${GAME.practice ? "" : `<td><b>${r.score}</b></td>`}</tr>`;
   });
   Q.results = Q.items.map(o => ({ n: o.no, score: o.score, done: true }));
   $("res1Title").textContent = expired ? `Времето изтече (${limit1()} s)` : `Готово! ${Q.items.length} ${Q.items.length === 1 ? "ооцит" : "ооцита"} за ${Q.session.t.toFixed(1)} s`;
   $("res1Title").className = expired ? "bad" : "ok";
   $("res1Body").innerHTML = `<table class="report"><thead><tr><th>Ооцит</th><th>Твоята оценка</th><th>Вярно</th>${GAME.practice ? "" : "<th>Точки</th>"}</tr></thead>
     <tbody>${rows.join("")}</tbody></table>${GAME.practice ? "" : `<p><b>${avgLine(Q.results, Q.items.length)}</b></p>`}`;
-  $("result1").hidden = false; ui1();
+  $("result1").hidden = false; panel1(); ui1();
 }
 /* ---------------- показания и рисуване */
 function ui1() {
@@ -3868,8 +4022,8 @@ function ui1() {
   if (ss.state === "done") { tEl.textContent = `${ss.t.toFixed(1)} s`; tEl.className = "timer done"; }
   else if (GAME.practice) { tEl.textContent = fmtT(ss.t); tEl.className = "timer"; }
   else { tEl.textContent = fmtT(rem); tEl.className = "timer " + (rem <= T_CRIT ? "crit" : rem <= T_WARN ? "warn" : ""); }
-  $("tstatus1").textContent = { ready: "Тръгва при първото действие", running: "Оценявай ооцитите", done: "Готово", expired: "Времето изтече" }[ss.state];
-  set4("q1Count", String(Q.items.length)); set4("q1Done", `${Q.items.filter(answered1).length} от ${Q.items.length}`);
+  $("tstatus1").textContent = { ready: "Тръгва след „Старт“", running: "Оценявай ооцитите", done: "Готово", expired: "Времето изтече" }[ss.state];
+  set4("q1Count", String(Q.items.length)); set4("q1Done", `${Q.items.filter(o => o.ok).length} от ${Q.items.length}`);
   if (Q.items.every(answered1) && $("toast1").textContent.startsWith("Не са оценени")) $("toast1").hidden = true;
   set4("q1Obj", OBJ2[Q.obj][0]); $("obj1Out").textContent = OBJ2[Q.obj][0];
 }
@@ -3886,7 +4040,7 @@ function draw1() {
       g.imageSmoothingEnabled = true; g.imageSmoothingQuality = "high";
       g.drawImage(im, -sp.c[0] * k, -sp.c[1] * k, sp.w * k, sp.h * k); g.restore();
     }
-    const sel = i === Q.sel, done = answered1(o);
+    const sel = i === Q.sel, done = o.ok;
     if (sel) { g.beginPath(); g.arc(cx, cy, R + 8, 0, 2 * Math.PI); g.strokeStyle = C.target; g.lineWidth = 2; g.stroke(); }
     const px = cx + R * 0.78, py = cy - R * 0.78;          // номер; зелен, когато е оценен
     g.beginPath(); g.arc(px, py, 11, 0, 2 * Math.PI); g.fillStyle = done ? C.done : "rgba(40,44,48,0.75)"; g.fill();
@@ -3909,7 +4063,7 @@ cv1.addEventListener("pointerdown", e => {
   if (!accepts1()) return;
   const r = cv1.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, s = scale1();
   const hit = Q.items.findIndex(o => { const [cx, cy] = v2s1(o.pos[0], o.pos[1]); return Math.hypot(x - cx, y - cy) < ZONA_OUT * s; });
-  if (hit >= 0) { start1(); Q.sel = hit; panel1(); }
+  if (hit >= 0) { Q.sel = hit; panel1(); }
   cv1.setPointerCapture(e.pointerId); drag1 = { x, y, moved: 0 };
 });
 cv1.addEventListener("pointermove", e => {
@@ -3931,23 +4085,28 @@ $("help1Close").onclick = () => Q1close();
 const keys1 = new Set();
 document.addEventListener("keydown", e => {
   if ($("stage1").hidden) return;
-  const k = e.key.toLowerCase();
+  const k = keyOf(e);
   if (!$("help1").hidden) { if (k === "h" || k === "escape") { Q1close(); e.preventDefault(); } return; }
-  if (e.target && e.target.tagName === "INPUT" && k !== "tab") return;
+  if (e.target && e.target.tagName === "INPUT" && k !== "tab" && k !== "enter") return;
   if (["tab", "enter"].includes(k)) e.preventDefault();
   if (k === "h") { Q1open(); return; }
   keys1.add(k);
   if (e.repeat) return;
+  if (Q.session && Q.session.state === "ready") {                    // преди „Старт“: само Старт, ново упражнение и помощ
+    if (k === "enter" || k === " ") { e.preventDefault(); go1(); } else if (k === "r") newEx1();
+    return;
+  }
+  if (k === " ") e.preventDefault();
   if (["1", "2", "3", "4", "5"].includes(k)) setObj1(+k - 1);
-  else if (k === "tab") select1((Q.sel + (e.shiftKey ? Q.items.length - 1 : 1)) % Q.items.length);
+  else if (k === "tab") { if (accepts1()) select1((Q.sel + (e.shiftKey ? Q.items.length - 1 : 1)) % Q.items.length); }
   else if (k === "r") newEx1();
-  else if (k === "enter") { if (!$("result1").hidden) newEx1(); else check1(false); }
+  else if (k === "enter") { if (!$("result1").hidden) newEx1(); else if (e.ctrlKey || e.metaKey) check1(false); else done1(); }
 });
-document.addEventListener("keyup", e => keys1.delete(e.key.toLowerCase()));
+document.addEventListener("keyup", e => keys1.delete(keyOf(e)));
 $("startStage1").onclick = () => {
   enterFS(); document.body.classList.add("in-stage");
   for (const id of ["menu", "stage", "stage3", "stage4", "stage5"]) $(id).hidden = true;
-  $("stage1").hidden = false; resize1(); newEx1(); Q1open();
+  $("stage1").hidden = false; resize1(); newEx1(); Q1open(); $("help1Close").textContent = "Към упражнението";
 };
 let last1 = performance.now();
 function frame1(now) {
@@ -3970,8 +4129,8 @@ const FOC = { speed: 40, wheel: false };                    // rules.ini [focus]
 const FOCUS_STAGES = [["stage3", () => T3, "2", 0], ["stage", () => S, "3", Z2_EQ], ["stage4", () => U, "4", C4.EQ], ["stage5", () => S5, "5", 0]];
 const focusKeys = new Set(), focusHold = { up: false, down: false };
 function focusStage() { for (const [id, get, suf, f0] of FOCUS_STAGES) if (!$(id).hidden) return { st: get(), suf, f0 }; return null; }
-document.addEventListener("keydown", e => { const k = e.key.toLowerCase(); if ((k === "z" || k === "x") && !(e.target && e.target.tagName === "INPUT")) focusKeys.add(k); if (k === "shift") focusKeys.add(k); });
-document.addEventListener("keyup", e => focusKeys.delete(e.key.toLowerCase()));
+document.addEventListener("keydown", e => { const k = keyOf(e); if ((k === "z" || k === "x") && !(e.target && e.target.tagName === "INPUT")) focusKeys.add(k); if (k === "shift") focusKeys.add(k); });
+document.addEventListener("keyup", e => focusKeys.delete(keyOf(e)));
 document.addEventListener("wheel", e => {
   if (!FOC.wheel || e.ctrlKey) return;
   const f = focusStage(); if (!f || f.st.paused) return;
@@ -3997,6 +4156,34 @@ function focusFrame(now) {
 }
 requestAnimationFrame(focusFrame);
 
+/* ============================================================ числата в менюто (всеки етап - свои) */
+// rules.ini дава стойностите по подразбиране; в менюто се сменят с − / +
+const CNT = { s1: 10, s2: 14, s2load: 1, s3: 1, s4: 1, s4load: 1, s5: 1, s5sperm: 14, s5load: 1 };
+function clampCnt() {
+  const L = C3.LOAD_MAX, c = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(v) || lo));
+  CNT.s1 = c(CNT.s1, 1, C1.MAXN);
+  CNT.s3 = c(CNT.s3, 1, 8); CNT.s4 = c(CNT.s4, 1, 8); CNT.s5 = c(CNT.s5, 1, 8);
+  CNT.s2load = c(CNT.s2load, 1, L);
+  CNT.s2 = c(CNT.s2, Math.max(C3.SPERM_MIN, CNT.s2load + 1), C3.SPERM_MAX);      // в капката винаги повече, отколкото влизат в иглата
+  CNT.s4load = c(CNT.s4load, 1, Math.min(L, CNT.s4));                           // в иглата - не повече от ооцитите
+  CNT.s5load = c(CNT.s5load, 1, Math.min(L, CNT.s5));
+  CNT.s5sperm = c(CNT.s5sperm, Math.max(C3.SPERM_MIN, CNT.s5 + 2, CNT.s5load + 1), C3.SPERM_MAX);   // поне по един годен за всеки ооцит и избор
+}
+function renderCnt() {
+  clampCnt();
+  document.querySelectorAll(".stepper[data-cnt]").forEach(st => { st.querySelector("output").textContent = CNT[st.dataset.cnt]; });
+  const L = C3.LOAD_MAX;
+  document.querySelectorAll("[data-loadrow]").forEach(el => {
+    const k = el.dataset.loadrow;
+    el.hidden = L <= 1 || (k === "s4" && CNT.s4 < 2) || (k === "s5" && CNT.s5 < 2);
+  });
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".stepper[data-cnt] .btn[data-d]"); if (!b) return;
+  const k = b.closest(".stepper").dataset.cnt; CNT[k] += +b.dataset.d; renderCnt();
+});
+renderCnt(); updLimTexts();
+
 /* ============================================================ правила (rules.ini) */
 function parseIni(text) {
   const out = {}; let sec = "";
@@ -4016,6 +4203,10 @@ function applyRules(r) {
     return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : cur;
   };
   LIMIT = num("general", "time_limit_s", 10, 600, LIMIT);
+  for (const st of [1, 2, 3, 4, 5]) { const v = parseFloat(((r["stage" + st] || {}).time_limit_s ?? "")); if (Number.isFinite(v)) LIM[st] = Math.max(10, Math.min(1800, v)); }
+  const cn = (sec, key, k) => { const v = parseInt(((r[sec] || {})[key] ?? ""), 10); if (Number.isFinite(v)) CNT[k] = v; };
+  cn("stage1", "oocytes", "s1"); cn("stage2", "sperm", "s2"); cn("stage3", "oocytes", "s3");
+  cn("stage4", "oocytes", "s4"); cn("stage5", "oocytes", "s5"); cn("stage5", "sperm", "s5sperm");
   AUTO_NEXT_S = num("general", "auto_next_s", 0, 30, AUTO_NEXT_S);
   C3.SPEED = [num("stage2", "sperm_speed_min", 0, 100, C3.SPEED[0]), num("stage2", "sperm_speed_max", 0, 100, C3.SPEED[1])];
   C3.NORMAL_SHARE = num("stage2", "normal_share", 0, 1, C3.NORMAL_SHARE);
@@ -4038,13 +4229,24 @@ function applyRules(r) {
   if (fr.wheel != null) FOC.wheel = /^(yes|да|1|true|on)$/i.test(String(fr.wheel).trim());
   const s1r = r.stage1 || {}, n1 = (k, cur) => { const v = parseFloat(s1r[k] ?? ""); return Number.isFinite(v) && v >= 0 && v <= 1 ? v : cur; };
   C1.IMMATURE = n1("immature_share", C1.IMMATURE); C1.DEGEN = n1("degenerate_share", C1.DEGEN); C1.CLEAN = n1("no_anomaly_share", C1.CLEAN);
+
+  // скала [grades]: „от колко точки нагоре = оценка“
+  const gr = Object.entries(r.grades || {}).map(([k, v]) => [parseFloat(k), String(v).trim()]).filter(([k, v]) => Number.isFinite(k) && v);
+  if (gr.length) GRADES = gr.sort((a, b) => b[0] - a[0]);
+  // „издържан“ започва от най-ниската оценка над тази от 0 точки (ако има такава)
+  const passFrom = GRADES.length ? (GRADES[GRADES.length - 1][0] === 0 ? (GRADES[GRADES.length - 2] || [0])[0] : GRADES[GRADES.length - 1][0]) : SCORE.pass;
+  if (GRADES.length > 1 && passFrom !== SCORE.pass) {
+    GAME.rulesWarn = `Внимание: скалата [grades] започва „издържан“ от ${passFrom}, а pass_score е ${SCORE.pass}.`;
+    console.warn(GAME.rulesWarn);
+  }
   const s5r = r.stage5 || {}, w5 = k => { const v = parseFloat(s5r[k] ?? ""); return Number.isFinite(v) && v >= 0 ? v : null; };
   for (const [k, key] of [["sperm", "weight_sperm"], ["oocyte", "weight_oocyte"], ["injection", "weight_injection"]]) { const v = w5(key); if (v !== null) C5.W[k] = v; }
   const s4r = r.stage4 || {}, n4 = (k, lo, hi, cur) => { const v = parseFloat(s4r[k] ?? ""); return Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : cur; };
   C4.ZONA_BREAK = n4("zona_break_um", 2, 40, C4.ZONA_BREAK); C4.MEM_BREAK = n4("membrane_break_um", 1, 40, C4.MEM_BREAK);
   C4.LYSIS = n4("lysis_um", 5, 150, C4.LYSIS); C4.MEDIUM_TOL = n4("medium_tol_um", 2, 100, C4.MEDIUM_TOL); C4.HEIGHT_TOL = n4("height_tol_um", 2, 40, C4.HEIGHT_TOL);
   const smx = parseInt(((r.stage2 || {}).sperm_max ?? ""), 10);
-  if (Number.isFinite(smx)) { C3.LOAD_MAX = Math.max(1, Math.min(3, smx)); updLoadUI(); }
+  if (Number.isFinite(smx)) C3.LOAD_MAX = Math.max(1, Math.min(3, smx));
+  renderCnt(); updLimTexts();
   const odv = parseFloat(((r.stage3 || {}).holding_od_um ?? ""));
   if (Number.isFinite(odv) && odv >= 30 && odv <= 250) HOLD_OD_UM = odv;
   const rot = ((r.stage3 || {}).rotation || "").toLowerCase();
@@ -4063,7 +4265,8 @@ function applyRules(r) {
     if (!res.ok) return;
     applyRules(parseIni(await res.text()));
     GAME.rulesSource = "rules.ini";
-    $("rulesSrc").textContent = "Правила: rules.ini";
+    $("rulesSrc").textContent = "Правила: rules.ini" + (GAME.rulesWarn ? " ⚠" : "");
+    if (GAME.rulesWarn) $("rulesSrc").title = GAME.rulesWarn;
   } catch (e) { /* няма файл - остават вградените */ }
 })();
 </script>
