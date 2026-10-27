@@ -1,0 +1,24 @@
+file;group;what;source;license;url
+needle_dark.webp;Пипети;инжекционна пипета (тъмна);Снимка от монитора на микроскопа в МЦ Репробиомед;с разрешение на клиниката;
+needle_light.webp;Пипети;инжекционна пипета (светла);Снимка от монитора на микроскопа в МЦ Репробиомед;с разрешение на клиниката;
+holding.webp;Пипети;holding пипета;Снимка от монитора на микроскопа в МЦ Репробиомед;с разрешение на клиниката;
+oocyte_body.webp;Ооцит (етапи 3–5);тяло на ооцита (от MI ооцит);Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+polar_body.webp;Ооцит (етапи 3–5);полярно телце (от MII ооцит);Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_GV.webp;Ооцити (етап 1);GV ооцит;Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_MI.webp;Ооцити (етап 1);MI ооцит;Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_MII.webp;Ооцити (етап 1);MII ооцит;Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_DEG.webp;Ооцити (етап 1);дегенериран ооцит;Human oocytes image classification method based on deep neural networks, BioMedical Engineering OnLine, 2023, фиг. 1;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_a.webp;Ооцити (етап 1);MII без аномалия;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_b.webp;Ооцити (етап 1);вакуола;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_c.webp;Ооцити (етап 1);гранулирана цитоплазма;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_d.webp;Ооцити (етап 1);тъмна цитоплазма;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_e.webp;Ооцити (етап 1);SER клъстер;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_f.webp;Ооцити (етап 1);неравна мембрана;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_g.webp;Ооцити (етап 1);рефрактилно телце;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_h.webp;Ооцити (етап 1);овална zona;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_i.webp;Ооцити (етап 1);частици в PVS;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_j.webp;Ооцити (етап 1);голямо PVS;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_k.webp;Ооцити (етап 1);дебела zona;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_l.webp;Ооцити (етап 1);голямо полярно телце;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_m.webp;Ооцити (етап 1);малко полярно телце;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
+s1_A_n.webp;Ооцити (етап 1);фрагментирано полярно телце;Kashutina и колеги, Journal of Assisted Reproduction and Genetics, 2024, фигурата с дисморфизмите;CC BY 4.0;https://creativecommons.org/licenses/by/4.0/
