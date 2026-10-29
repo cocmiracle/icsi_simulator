@@ -332,6 +332,9 @@ label.anom input { accent-color: var(--accent); }
   background: rgba(6, 10, 14, 0.6); padding: 16px;
 }
 .modal[hidden] { display: none; }
+a.btn { text-decoration: none; display: inline-flex; align-items: center; color: inherit; }
+#news ul { margin: 8px 0; padding-left: 20px; }
+#news li { margin: 5px 0; }
 .modal-card {
   border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--ink);
   max-width: 680px; width: 100%;
@@ -384,6 +387,8 @@ label.anom input { accent-color: var(--accent); }
     <span class="seg" role="group" aria-labelledby="lblLang" id="pickLang"></span>
     <span class="lbl" id="rulesSrc">Правила: вградени</span>
     <button class="btn fsBtn" id="menuFs" type="button">Цял екран</button>
+    <a class="btn" id="menuGuide" href="docs/ICSI_rakovodstvo.pdf" target="_blank" rel="noopener">Ръководство за потребителя</a>
+    <button class="btn" id="menuNews" type="button">Какво ново</button>
   </div>
   <ol class="stages">
     <li class="ready">
@@ -537,6 +542,22 @@ label.anom input { accent-color: var(--accent); }
   </aside>
 </main>
 
+<div id="news" class="modal" role="dialog" aria-modal="true" aria-labelledby="newsTitle" hidden>
+  <div class="help modal-card">
+    <h2 id="newsTitle">Какво е ново във версия 4.9</h2>
+    <ul>
+      <li>Езици: български и английски (в менюто – „Език“).</li>
+      <li>Етап 1: зрелият ооцит (MII) се завърта с полярното телце на 12 или 6 часа.</li>
+      <li>Етап 2: сперматозоидът се удря в ниско спусната игла и се плъзга покрай нея; засмукване или изтласкване до него го мести и завърта.</li>
+      <li>Етапи 2, 3 и 5: натисната в дъното, иглата се влачи напред, после върхът се огъва нагоре и накрая се чупи.</li>
+      <li>Етап 3: засмуканата клетка се вдига заедно с пипетата; под ▼ / ▲ пише коя пипета движат; иглата минава над клетката, но не и през нея; клетката не залепва.</li>
+      <li>Етапи 3 и 5: полярното телце се вижда по-ясно; в „Упражнение“ е оградено с пунктирен кръг; етап 3 започва на 20x.</li>
+      <li>Етап 5: същите поправки и тук.</li>
+    </ul>
+    <p class="hint">Ръководството за потребителя се отваря от бутона в менюто. Забележките – във формуляра за обратна връзка.</p>
+    <div class="foot"><button class="btn primary" id="newsClose">Към симулатора</button></div>
+  </div>
+</div>
 <div id="help1" class="modal" role="dialog" aria-modal="true" aria-labelledby="help1Title" hidden>
   <div class="help modal-card">
     <h2 id="help1Title">Етап 1: преценка на ооцитите</h2>
@@ -968,7 +989,7 @@ label.anom input { accent-color: var(--accent); }
   <div class="help modal-card">
     <h2 id="help3Title">Етап 2: сперматозоидът (версия 4.9)</h2>
     <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана, а спусната до дъното е ясна.</p>
-    <p class="hint">Иглата и сперматозоидите: ако иглата е ниско (под ~3 µm над тях), сперматозоидът се удря в нея и се плъзга покрай стъклото; по-високо минава под нея. Засмукване или изтласкване близо до сперматозоид го придърпва или отблъсква и го завърта – така се нагласява напречно на върха. Опрян в дъното връх при още натиск се огъва и плъзга напред, а задържаният натиск го чупи (−20 точки).</p>
+    <p class="hint">Иглата и сперматозоидите: ако иглата е ниско (под ~3 µm над тях), сперматозоидът се удря в нея и се плъзга покрай стъклото; по-високо минава под нея. Засмукване или изтласкване близо до сперматозоид го придърпва или отблъсква и го завърта – така се нагласява напречно на върха. Опрян в дъното връх при още натиск се влачи напред, после се огъва нагоре, а задържаният натиск го чупи (−20 точки).</p>
     <p class="hand-line" id="help3Hand"></p>
     <h3>Задача, до <span data-lim="2">2 минути</span> на сперматозоид</h3>
     <ol>
@@ -1014,7 +1035,7 @@ label.anom input { accent-color: var(--accent); }
       <li>Докарай клетката близо до върха на пипетата.</li>
       <li>Докато е свободна, я завърти така, че полярното телце да е ясно, във фокус, и срещу „12“ или „6“.
         <span data-rot="pipette">С инжекционната пипета: докосни ооцита отстрани с върха и го плъзни по повърхността му. Движение настрани го завърта като часовник; вдигане или спускане на върха (U / O) го търкаля и телцето влиза във фокус или излиза от него.</span>
-        <i>Защо: Вретеното на делене е до полярното телце: на 12 или 6 часа иглата, която влиза на 3 часа, не го засяга.</i></li>
+        <i>Защо: Вретеното на делене е до полярното телце: на 12 или 6 часа иглата, която влиза на 3 часа, не го засяга.</i> <span>В „Упражнение“ телцето е оградено с пунктирен кръг.</span></li>
       <li>Нагласи височината на пипетата на екватора на ооцита (вляво „Пипета над дъното“ става зелено) и включи смукането: клетката се придърпва и се хваща.</li>
       <li>Натисни „Провери“. Ако нещо не е наред, пусни клетката, поправи и я хвани отново.</li>
     </ol>
@@ -1270,7 +1291,7 @@ function newSession() {
   S.suction = false;
   S.session = { t: 0, lapStart: 0, state: "ready", attempts: 0 };
   if (S.n > 1) S.results = [];
-  S.obj = S.n > 1 ? 0 : 1;
+  S.obj = S.n > 1 ? 1 : 2;                                // 4.9: по-голямо увеличение, телцето се вижда по-ясно (20x; при няколко - 10x)
   showLastCheck("lastCheck", null);
   hideResult(); ui();
 }
@@ -1475,15 +1496,16 @@ function farHint2(d) {
 let lastZHint2 = -1e9;
 function breakNeedle2() {
   penalize(S.pen, "needle_broken");
-  S.zi = Z2_EQ + 40; S.injPrev = [S.inj[0], S.inj[1], S.zi];
-  toast([T("Иглата се счупи от натиска в дъното!"), T("Сменена е с нова, вдигната над дъното. Не натискай върха в дъното.")], "err", 3600);
+  toast([T("Иглата се счупи от натиска в дъното!"), T("След малко ще бъде сменена с нова, вдигната над дъното.")], "err", 2600);
+  S.bendInj.onSwap = () => { S.zi = Z2_EQ + 40; S.injPrev = [S.inj[0], S.inj[1], S.zi]; toast([T("Иглата е сменена с нова.")], "info", 2000); };
 }
+function bendHint2() { toast([T("Върхът се огъва нагоре!"), T("Още натиск ще счупи иглата: вдигни я (U).")], "warn", 2400); }
 let lastBottomHint2 = 0;
 function bottomHint2() {
   const now = performance.now();
   if (now - lastBottomHint2 < 3000) return;
   lastBottomHint2 = now;
-  toast([T("Върхът опря дъното и се плъзга напред."), T("На живо така иглата се огъва и може да се счупи: вдигни я.")], "warn", 2600);
+  toast([T("Върхът опря дъното и се влачи напред."), T("Ако продължиш, ще се огъне нагоре и ще се счупи: вдигни я.")], "warn", 2600);
 }
 function zHint2() {
   penalize(S.pen, "wrong_height");
@@ -1673,12 +1695,13 @@ function keyControl(dt) {
     const ix = keysInj ? (has("l") ? 1 : 0) - (has("j") ? 1 : 0) : 0, iy = keysInj ? (has("k") ? 1 : 0) - (has("i") ? 1 : 0) : 0;
     if (ix || iy) { startTimerIfReady(); const n = Math.hypot(ix, iy); moveInj(ix / n * INJ_SPEED * fine * dt, iy / n * INJ_SPEED * fine * dt); }
     const dzi = (keysInj ? (has("u") ? 1 : 0) - (has("o") ? 1 : 0) : 0) + (S.activePip === "inj" ? btnDz : 0);
-    if (dzi) {
+    const bi = S.bendInj || (S.bendInj = { onSwap: () => toast([T("Иглата е сменена с нова.")], "info", 2000) });
+    bottomPress(bi, dzi < 0 && S.zi <= 1e-6, dt,                                    // дъното: влачене, огъване, чупене
+                u => { moveInj(S.side * u * fine, 0); bottomHint2(); }, breakNeedle2, bendHint2);
+    if (dzi && !(bi.broken > 0)) {                                                  // счупената не се движи до смяната
       startTimerIfReady();
-      bottomPress(S.bendInj || (S.bendInj = {}), dzi < 0 && S.zi <= 1e-6, dt,                   // по дъното: плъзга се, после се чупи
-                  u => { moveInj(S.side * u * fine, 0); bottomHint2(); }, breakNeedle2);
       S.zi = Math.max(0, Math.min(Z2I_MAX, S.zi + Math.sign(dzi) * Z2_SPEED * fine * dt));
-    } else if (S.bendInj) S.bendInj.press = 0;
+    }
   }
   if (ROT3 === "pipette") { rollStep(); return; }   // ооцитът се върти само с пипетата
   rollStep();
@@ -2061,12 +2084,20 @@ function drawNeedleSprite(g, o) {
 }
 // ОБЩО за етапи 2, 3 и 5 (4.9, по шефа и тестера): опреният в дъното връх при още натиск надолу се огъва и плъзга
 // напред; задържаният натиск го чупи - иглата се сменя с нова (губи се време, а сперматозоидите в нея се губят)
-const BEND = { SLIDE: 25, BREAK_S: 1.5 };            // µm/s плъзгане напред; секунди натиск до счупване
-function bottomPress(st, pressing, dt, slide, onBreak) {
-  if (!pressing) { st.press = 0; return; }
-  st.press = (st.press || 0) + dt; slide(BEND.SLIDE * dt);
-  if (onBreak && st.press >= BEND.BREAK_S) { st.press = 0; onBreak(); }
+const BEND = { SLIDE: 25, DRAG_S: 0.6, BREAK_S: 1.5, SWAP_S: 2.5 };
+// натиск в дъното, по фази (29.10, по практиката): 1) до DRAG_S s върхът се влачи по дъното напред; 2) после спира и се
+// огъва нагоре (размазва се, скъсява се) - предупреждение; 3) при BREAK_S s се чупи: отчупен връх SWAP_S s, после нова игла.
+// st: { press, bend (0..1), broken (оставащи s) } - вика се на всеки кадър (pressing = натиска се надолу при опрян връх)
+function bottomPress(st, pressing, dt, slide, onBreak, onBend) {
+  if (st.broken > 0) { st.broken -= dt; if (st.broken <= 0) { st.broken = 0; st.bend = 0; if (st.onSwap) st.onSwap(); } return; }
+  if (!pressing) { st.press = 0; st.bend = Math.max(0, (st.bend || 0) - 3 * dt); return; }      // пуснат: върхът се изправя
+  st.press = (st.press || 0) + dt;
+  if (st.press < BEND.DRAG_S || !onBreak) { slide(BEND.SLIDE * dt); return; }                   // 1) влачене
+  if (!st.bend && onBend) onBend();
+  st.bend = Math.min(1, (st.press - BEND.DRAG_S) / (BEND.BREAK_S - BEND.DRAG_S));            // 2) огъване нагоре
+  if (st.press >= BEND.BREAK_S) { st.press = 0; st.bend = 0; st.broken = BEND.SWAP_S; onBreak(); }   // 3) чупене
 }
+const needleLook = st => st ? { bend: st.bend || 0, broken: st.broken > 0 } : {};
 function needleOuter(d) { return Math.min(NEEDLE.MAX_R, NEEDLE.TIP_R + NEEDLE.TAPER * Math.max(0, d)); }
 function drawSpermScreen(g, hx, hy, dirx, s, alpha, coiled) {
   // сперматозоид в екранни координати: глава и опашка по посока dirx; в цитоплазмата опашката е свита
@@ -2081,6 +2112,11 @@ function drawSpermScreen(g, hx, hy, dirx, s, alpha, coiled) {
   g.restore();
 }
 function drawNeedle(g, o) {
+  // огънат нагоре връх: излиза от фокуса и отгоре изглежда по-къс; отчупен: по-къс, с назъбен край (29.10)
+  if (o.bend || o.broken) {
+    const cut = o.broken ? 16 : 6 * o.bend;
+    o = Object.assign({}, o, { tx: o.tx + o.sd * cut * o.s, blur: o.broken ? (o.blur || 0) : Math.min(1, (o.blur || 0) + 0.8 * o.bend) });
+  }
   const { tx, ty, sd, s } = o, blur = o.blur || 0, Wd = o.W || 1000;
   const outer = needleOuter, inner = d => Math.max(outer(d) - NEEDLE.WALL - 0.012 * d, 1.8);
   const P = (dd, off) => [tx + sd * dd * s, ty + off * s];
@@ -2113,6 +2149,11 @@ function drawNeedle(g, o) {
   line([tO[0], bO[0]], "78,80,74", a, Math.max(1, w / 2));
   }
   if (o.pressedDot) { g.beginPath(); g.arc(tx, ty, Math.max(2, 1.2 * s), 0, 2 * Math.PI); g.fillStyle = "#3C3E3A"; g.fill(); }
+  if (o.broken) {                                      // назъбеният край на отчупения връх
+    const r = needleOuter(0) + 1, zz = [[0, -r], [-1.8, -r * 0.5], [1.2, -r * 0.1], [-1.5, r * 0.35], [0.8, r * 0.7], [0, r]];
+    g.beginPath(); zz.forEach(([dx, dy], i) => { const x = tx + sd * dx * s, y = ty + dy * s; i ? g.lineTo(x, y) : g.moveTo(x, y); });
+    g.strokeStyle = "rgba(60,62,58,0.9)"; g.lineWidth = Math.max(1.5, 0.9 * s); g.stroke();
+  }
 }
 
 // ООЦИТ ОТ СНИМКИ (CC BY 4.0, BioMedical Engineering OnLine 2023, фиг. 1): тялото от MI ооцит, полярното
@@ -2174,7 +2215,17 @@ function drawOocytePhoto(g, o, ring, round) {
   const lv = pick(oocPhoto.pb, Math.abs(dzPB) * bpu * s / kp);
   g.save(); g.globalAlpha = 0.35 + 0.65 * focus; g.translate(cx + x * s, cy + y * s); g.rotate(Math.atan2(y, x) + Math.PI / 2);
   g.drawImage(lv.c, -(OOC_PHOTO.pb.c[0] + lv.p) * kp, -(OOC_PHOTO.pb.c[1] + lv.p) * kp, lv.c.width * kp, lv.c.height * kp);
+  // 4.9 (обратна връзка: телцето се вижда трудно): по-ясен ръб, колкото по-рязко е - толкова по-ясен
+  if (focus > 0.05) {
+    g.beginPath(); g.arc(0, 0, PB_R * 1.05 * s, 0, 2 * Math.PI);
+    g.globalAlpha = 0.55 * focus; g.strokeStyle = "rgba(55,55,50,1)"; g.lineWidth = Math.max(1, 0.7 * s); g.stroke();
+  }
   g.restore();
+  // само в „Упражнение“: тънък кръг около телцето, за да се намира по-лесно (в „Изпит“ го няма)
+  if (o.pbHint) {
+    g.save(); g.beginPath(); g.arc(cx + x * s, cy + y * s, Math.max(10, PB_R * 2.4 * s), 0, 2 * Math.PI);
+    g.globalAlpha = 0.35 + 0.5 * focus; g.strokeStyle = C.target; g.lineWidth = 1.5; g.setLineDash([4, 3]); g.stroke(); g.restore();
+  }
 }
 
 // ОБЩ ооцит за всички етапи (3, 4, 5): zona, перивителиново пространство, цитоплазма с гранулите в 3D
@@ -2225,7 +2276,7 @@ function drawOocyteBody(g, o) {
 function drawOocyte(c, s) {
   const [cx, cy] = w2s(c.pos[0], c.pos[1]), R = ZONA_OUT * s;
   if (cx < -R || cy < -R || cx > W + R || cy > H + R) return;      // извън екрана
-  drawOocyteBody(ctx, { cx, cy, s, M: c.M, granules: c.granules, focus: (S.F ?? Z2_EQ) - (cellH(c) - Z2_EQ), obj: S.obj });
+  drawOocyteBody(ctx, { cx, cy, s, M: c.M, granules: c.granules, focus: (S.F ?? Z2_EQ) - (cellH(c) - Z2_EQ), obj: S.obj, pbHint: GAME.practice });
 }
 function drawMarks(s) {
   // зелен номер на готовите; тънък син кръг около клетката до пипетата (при няколко ооцита)
@@ -2375,7 +2426,7 @@ function drawPipette(s) {
 function drawInjPipette(s) {
   // общата игла, от другата страна на holding пипетата; извън екватора е размазана
   const [tx, ty] = w2s(S.inj[0], S.inj[1]);
-  drawNeedle(ctx, { tx, ty, sd: injSide(), s, blur: Math.min(1, Math.abs(S.zi - (S.F ?? Z2_EQ)) / 50), W });
+  drawNeedle(ctx, { tx, ty, sd: injSide(), s, blur: Math.min(1, Math.abs(S.zi - (S.F ?? Z2_EQ)) / 50), W, ...needleLook(S.bendInj) });
 }
 function drawTicks(s) {
   if (s < 0.5) return;                 // на 4x маркерите са твърде малки и само пречат
@@ -2723,7 +2774,9 @@ function stunStep3(dt) {
     }
   }
 }
+const needleBroken3 = () => (!$("stage3").hidden && T3.bend && T3.bend.broken > 0) || (!$("stage5").hidden && S5.bend && S5.bend.broken > 0);
 function flow3(dt, fine) {
+  if (needleBroken3()) return;                         // счупената игла не засмуква до смяната
   const v = C3.FLOW * (fine ? FINE : 1) * dt, tp = tip3(), side = side3();
   const insList = insideList();
   if (insList.length && T3.flow) {
@@ -2785,17 +2838,18 @@ function aspCandidate() {
   return best;
 }
 let lastBendHint3 = -1e9;
-function bendHint3() {
+function dragHint3() {
   const now = performance.now();
-  if (now - lastBendHint3 > 3000) { lastBendHint3 = now; events3.push([[T("Върхът опря дъното и се огъва: плъзга се напред."), T("Още натиск ще счупи иглата. Вдигни я (Q).")], "warn"]); }
+  if (now - lastBendHint3 > 3000) { lastBendHint3 = now; events3.push([[T("Върхът опря дъното и се влачи напред."), T("Ако продължиш, ще се огъне нагоре и ще се счупи: вдигни я (Q).")], "warn"]); }
 }
-function breakNeedle3() {
-  // счупена игла: сперматозоидите в нея излизат и се губят; новата игла е вдигната над дъното
+function bendHint3() { lastBendHint3 = performance.now(); events3.push([[T("Върхът се огъва нагоре!"), T("Още натиск ще счупи иглата: вдигни я (Q).")], "warn"]); }
+function breakNeedle3(st, setZ) {
+  // счупена игла: сперматозоидите в нея излизат и се губят; след малко - нова игла, вдигната над дъното
   penalize(T3.pen, "needle_broken");
   const tp = tip3();
   for (const sp of T3.sperm) if (sp.inside) { sp.inside = false; sp.pos = [tp[0] + uni(-6, 6), tp[1] + uni(-6, 6)]; }
-  events3.push([[T("Иглата се счупи от натиска в дъното!"), T("Сменена е с нова, вдигната над дъното; сперматозоидите в нея са изгубени.")], "err"]);
-  return 20;
+  events3.push([[T("Иглата се счупи от натиска в дъното!"), T("Сперматозоидите в нея са изгубени. След малко ще бъде сменена с нова.")], "err"]);
+  st.onSwap = () => { setZ(20); events3.push([[T("Иглата е сменена с нова.")], "info"]); };
 }
 let lastHighHint = -1e9;
 function tipHighHint() {
@@ -3134,7 +3188,7 @@ function drawInside(sp) {
 function drawPipette3() {
   // общата игла; фокусът е на дъното: колкото по-високо е върхът, толкова по-размазана е
   const [tx, ty] = w2s3(...tip3());
-  drawNeedle(ctx3, { tx, ty, sd: side3(), s: scale3(), blur: Math.min(1, Math.abs(T3.z - (T3.F ?? 0)) / C3.Z_BLUR), W: W3, pressedDot: pressed3() });
+  drawNeedle(ctx3, { tx, ty, sd: side3(), s: scale3(), blur: Math.min(1, Math.abs(T3.z - (T3.F ?? 0)) / C3.Z_BLUR), W: W3, pressedDot: pressed3(), ...needleLook(T3.bend) });
 }
 function draw3() {
   const g = ctx3, s = scale3();
@@ -3184,9 +3238,9 @@ function frame3(now) {
         const dx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), dy = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
         if (dx || dy) { start3(); const n = Math.hypot(dx, dy), v = C3.STAGE_SPEED * k * dt; moveDish3(dx / n * v, dy / n * v); }
         const dz = ((has("q") || T3.holdUp) ? 1 : 0) - ((has("e") || T3.holdDown) ? 1 : 0);
-        if (dz) { start3(); T3.z = Math.max(0, Math.min(C3.Z_MAX, T3.z + dz * C3.Z_SPEED * k * dt)); }
+        if (dz && !(T3.bend && T3.bend.broken > 0)) { start3(); T3.z = Math.max(0, Math.min(C3.Z_MAX, T3.z + dz * C3.Z_SPEED * k * dt)); }
         bottomPress(T3.bend || (T3.bend = {}), dz < 0 && T3.z < C3.Z_CONTACT, dt,
-                    u => { movePip3(-side3() * u * k, 0); bendHint3(); }, () => { T3.z = breakNeedle3(); });
+                    u => { movePip3(-side3() * u * k, 0); dragHint3(); }, () => breakNeedle3(T3.bend, z => { T3.z = z; }), bendHint3);
         const asp = has(" ") || T3.holdAsp, exp = has("b") || T3.holdExp;
         T3.flow = asp && !exp ? 1 : exp && !asp ? -1 : 0;
         if (T3.flow) start3();
@@ -4003,7 +4057,7 @@ function draw5() {
     if (o === S5.heldCell) { OFF4 = [0, 0]; drawOocyte4(g, s); continue; }
     const [cx, cy] = v2s5(...d2v5(o.oo[0], o.oo[1])), R = ZONA_OUT * s;
     if (cx < -R || cy < -R || cx > W5 + R || cy > H5 + R) continue;
-    drawOocyteBody(g, { cx, cy, s, M: o.cell.M, granules: o.cell.granules, focus: FOCUS4, obj: S5.obj });
+    drawOocyteBody(g, { cx, cy, s, M: o.cell.M, granules: o.cell.granules, focus: FOCUS4, obj: S5.obj, pbHint: GAME.practice && !o.done });
     if (o.done) {                                      // готовите: зелено число
       const px = cx + R * 0.72, py = cy - R * 0.72;
       g.beginPath(); g.arc(px, py, 11, 0, 2 * Math.PI); g.fillStyle = C.done; g.fill();
@@ -4016,7 +4070,7 @@ function draw5() {
   const list = S5.phase === "pvp" ? insideList().map(x => x.uHead)
              : [...(!U.sperm.out && !U.sperm.none ? [U.sperm.u] : []), ...S5.queue.map(q => q.u)];
   const [ntx, nty] = w2s4(U.tip[0], U.tip[1]);
-  drawNeedle(g, { tx: ntx, ty: nty, sd: sd4(), s, blur: Math.min(1, Math.abs(U.z - FOCUS4) / 25), W: W4, cyto: U.cyto, sperm: list });
+  drawNeedle(g, { tx: ntx, ty: nty, sd: sd4(), s, blur: Math.min(1, Math.abs(U.z - FOCUS4) / 25), W: W4, cyto: U.cyto, sperm: list, ...needleLook(S5.bend) });
   vignetteScale4(g, s);
   [ctx4, W4, H4, U.obj] = keep4; OFF4 = keep4[4]; FOCUS4 = keep4[5];
   if (!S5.held) { U.tip = keep4[6]; U.z = keep4[7]; }
@@ -4110,9 +4164,9 @@ function frame5(now) {
       const dx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), dy = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
       if (dx || dy) { const n = Math.hypot(dx, dy); moveDish5(dx / n * C5.STAGE_SPEED * fine * dt, dy / n * C5.STAGE_SPEED * fine * dt); }
       const dz = ((has("q") || has("u") || S5.holdUp) ? 1 : 0) - ((has("e") || has("o") || S5.holdDown) ? 1 : 0);
-      if (dz) { start5(); S5.Z = Math.max(0, Math.min(C5.Z_MAX, S5.Z + dz * C4.Z_SPEED * fine * dt)); }
+      if (dz && !(S5.bend && S5.bend.broken > 0)) { start5(); S5.Z = Math.max(0, Math.min(C5.Z_MAX, S5.Z + dz * C4.Z_SPEED * fine * dt)); }
       bottomPress(S5.bend || (S5.bend = {}), dz < 0 && S5.Z < C3.Z_CONTACT, dt,
-                  u => { moveNeedle5(-sd4() * u * fine, 0); bendHint3(); }, () => { S5.Z = breakNeedle3(); });
+                  u => { moveNeedle5(-sd4() * u * fine, 0); dragHint3(); }, () => breakNeedle3(S5.bend, z => { S5.Z = z; }), bendHint3);
     }
     const asp = keys5.has(" ") || S5.holdAsp, exp = keys5.has("b") || S5.holdExp;
     // сперматозоидите в PVP (етап 2)
@@ -4433,6 +4487,17 @@ $("rb1Menu").onclick = () => showMenu(); $("rb1Help").onclick = () => Q1open();
 function Q1open() { Q.paused = true; $("help1").hidden = false; $("help1Close").focus(); }
 function Q1close() { $("help1").hidden = true; Q.paused = false; }
 $("help1Close").onclick = () => Q1close();
+// „Какво ново“: от бутона в менюто; при първо отваряне на нова версия се показва веднъж само (4.9)
+const NEWS_VER = "4.9";
+function newsOpen() { $("news").hidden = false; $("newsClose").focus(); }
+function newsClose() { $("news").hidden = true; try { localStorage.setItem("icsi_news", NEWS_VER); } catch (e) { /* няма достъп */ } }
+$("menuNews").onclick = newsOpen; $("newsClose").onclick = newsClose;
+$("news").addEventListener("click", e => { if (e.target === $("news")) newsClose(); });
+document.addEventListener("keydown", e => { if (!$("news").hidden && (keyOf(e) === "escape" || keyOf(e) === "enter")) { e.preventDefault(); e.stopImmediatePropagation(); newsClose(); } }, true);
+(function newsOnce() {
+  let seen = null; try { seen = localStorage.getItem("icsi_news"); } catch (e) { return; }   // без памет - не досажда
+  if (seen !== NEWS_VER) newsOpen();
+})();
 const keys1 = new Set();
 document.addEventListener("keydown", e => {
   if ($("stage1").hidden) return;
