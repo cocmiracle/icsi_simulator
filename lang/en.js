@@ -676,4 +676,12 @@ I18N.add("en", {
   "След малко ще бъде сменена с нова, вдигната над дъното.": "It will shortly be replaced with a new one, raised above the bottom.",
   "В „Упражнение“ телцето е оградено с пунктирен кръг.": "In “Practice” the polar body is marked with a dashed circle.",
   "Етапи 3 и 5: полярното телце се вижда по-ясно; в „Упражнение“ е оградено с пунктирен кръг; етап 3 започва на 20x.": "Stages 3 and 5: the polar body is easier to see; in “Practice” it is marked with a dashed circle; stage 3 starts at 20x.",
+  "(над)": "(above)",
+  "(под)": "(below)",
+  "Телцето е над фокуса.": "The polar body is above the focus.",
+  "Телцето е под фокуса.": "The polar body is below the focus.",
+  "Задръж {0}: търкаля се към екватора.": "Hold {0}: it rolls towards the equator.",
+  "Докосни ооцита с върха на иглата откъм {0} ч и задръж {1}.": "Touch the oocyte with the needle tip at {0} o'clock and hold {1}.",
+  "Завърти ооцита с бутона „Върти“.": "Rotate the oocyte with the “Rotate” button.",
+  "Етап 3: вляво пише дали телцето е над или под фокуса и откъде да се докосне ооцитът, за да се търкаля към екватора; в „Упражнение“ телцето започва видимо.": "Stage 3: on the left it says whether the polar body is above or below the focus and where to touch the oocyte to roll it towards the equator; in “Practice” the polar body starts visible.",
 });

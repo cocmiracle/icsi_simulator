@@ -552,6 +552,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
       <li>Етапи 2, 3 и 5: натисната в дъното, иглата се влачи напред, после върхът се огъва нагоре и накрая се чупи.</li>
       <li>Етап 3: засмуканата клетка се вдига заедно с пипетата; под ▼ / ▲ пише коя пипета движат; иглата минава над клетката, но не и през нея; клетката не залепва.</li>
       <li>Етапи 3 и 5: полярното телце се вижда по-ясно; в „Упражнение“ е оградено с пунктирен кръг; етап 3 започва на 20x.</li>
+      <li>Етап 3: вляво пише дали телцето е над или под фокуса и откъде да се докосне ооцитът, за да се търкаля към екватора; в „Упражнение“ телцето започва видимо.</li>
       <li>Етап 5: същите поправки и тук.</li>
     </ul>
     <p class="hint">Ръководството за потребителя се отваря от бутона в менюто. Забележките – във формуляра за обратна връзка.</p>
@@ -592,6 +593,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
       <dt>До пипетата</dt><dd id="vDist">–</dd>
       <dt>Състояние</dt><dd id="vHeld">свободна</dd>
     </dl>
+    <p class="hint" id="rollHint" hidden></p>
     <h3>Микроскоп</h3>
     <dl class="rows">
       <dt>Обектив</dt><dd id="vObj">10x</dd>
@@ -1277,6 +1279,14 @@ function placeCells(n) {
   return pts.map(p => makeCell(p, 520));
 }
 
+// 4.9: в „Упражнение“ телцето започва видимо - близо до екватора (до 25°), но не на 12 или 6; rules.ini [stage3] practice_easy_start
+let EASY_START3 = true;
+function easyStart(c) {
+  for (let i = 0; i < 400; i++) {
+    c.q = qRandom(); c.M = qMat(c.q);
+    if (Math.abs(pbTilt(c)) <= 25 && orientErr(pbClock(c)) >= 1.5) return;
+  }
+}
 const injSide = () => -S.side;                  // инжекционната пипета е от другата страна (десняк: отдясно)
 const injOn = () => ROT3 !== "button";
 function newSession() {
@@ -1287,6 +1297,7 @@ function newSession() {
   S.dish = [0, 0]; S.pip = [0, 0]; S.z = Z2_START;
   S.inj = [injSide() * (ZONA_OUT + 90), 0]; S.zi = Z2_EQ; S.injPrev = [S.inj[0], S.inj[1], S.zi];
   S.cells = placeCells(S.n);
+  if (GAME.practice && EASY_START3) for (const c of S.cells) easyStart(c);
   S.omega = [0, 0, 0]; S.omegaCell = null;
   S.suction = false;
   S.session = { t: 0, lapStart: 0, state: "ready", attempts: 0 };
@@ -1934,6 +1945,37 @@ function showResult(ok, ev) {
 function hideResult() { $("result").hidden = true; stopAutoNext("s2"); }
 
 const fmtT = t => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, "0")}`;
+// 4.9 (обратна връзка: телцето трудно се намира): с думи къде да се докосне и накъде да се търкаля. Вертикалното движение
+// на върха търкаля ооцита около хоризонтална ос, перпендикулярна на мястото на допира - затова допирът трябва да е откъм
+// телцето (или срещу него), от страната на иглата. Посоката (U или O) се пробва с малко завъртане, както в rollStep.
+const ang2clock = a => { const h = (((a + Math.PI / 2) / (2 * Math.PI) * 12) % 12 + 12) % 12; return Math.round(h) || 12; };
+function rollAdvice(c) {
+  if (!injOn()) return null;
+  const [px, py, pz] = pbOffset(c), z0 = Math.abs(pz), sd = injSide();
+  let cands = Math.hypot(px, py) < 0.15 * PB_D ? [sd > 0 ? 0 : Math.PI] : [Math.atan2(py, px), Math.atan2(py, px) + Math.PI];
+  cands = cands.filter(a => Math.cos(a) * sd > -0.35);               // откъм иглата (иначе тръбата минава през клетката)
+  if (!cands.length) cands = [sd > 0 ? 0 : Math.PI];
+  const k = injContact(c), tipA = Math.atan2(k.dy, k.dx), touching = k.d <= ZONA_OUT + INJ_TIP_R + 4;
+  const diff = a => Math.abs(Math.atan2(Math.sin(a - tipA), Math.cos(a - tipA)));
+  const at = cands.sort((a, b) => diff(a) - diff(b))[0];
+  const n = [Math.cos(at), Math.sin(at), 0];
+  const tryKey = up => {                                             // U: върхът нагоре (z на клетката намалява)
+    const vt = [0, 0, up ? -1 : 1], ax = [n[1] * vt[2] - n[2] * vt[1], n[2] * vt[0] - n[0] * vt[2], n[0] * vt[1] - n[1] * vt[0]];
+    return Math.abs(mApply(qMat(qNorm(qMul(qAxisAngle(ax, 0.15), c.q))), [0, PB_D, 0])[2]);
+  };
+  const key = tryKey(true) < tryKey(false) ? "U" : "O";
+  return { key, hour: ang2clock(at), here: touching && diff(at) < 0.7 };
+}
+function rollHintUi(c, tilt) {
+  const el = $("rollHint");
+  if (c.held || Math.abs(tilt) <= TILT_TOL) { el.hidden = true; return; }
+  const where = tilt >= 0 ? T("Телцето е под фокуса.") : T("Телцето е над фокуса.");
+  const a = rollAdvice(c);
+  el.textContent = where + " " + (!a ? T("Завърти ооцита с бутона „Върти“.")
+    : a.here ? T`Задръж ${a.key}: търкаля се към екватора.`
+    : T`Докосни ооцита с върха на иглата откъм ${a.hour} ч и задръж ${a.key}.`);
+  el.hidden = false;
+}
 function setRow(id, text, cls) { const el = $(id); el.textContent = text; el.className = cls || ""; }
 function ui() {
   if (S.pen) renderPen(S.session.state === "done" && S.lastPen ? S.lastPen : S.pen, "errs2", "score2", S.session.state === "expired");
@@ -1941,12 +1983,13 @@ function ui() {
   if (t) {
     const h = pbClock(t), tilt = pbTilt(t);
     setRow("vClock", T`${h.toFixed(1)} ч`, orientErr(h) <= ORIENT_TOL_H ? "ok" : "");
-    setRow("vTilt", `${tilt >= 0 ? "+" : "−"}${Math.abs(tilt).toFixed(0)}°`, Math.abs(tilt) <= TILT_TOL ? "ok" : "");
+    setRow("vTilt", `${tilt >= 0 ? "+" : "−"}${Math.abs(tilt).toFixed(0)}° ${tilt >= 0 ? T("(под)") : T("(над)")}`, Math.abs(tilt) <= TILT_TOL ? "ok" : "");
+    rollHintUi(t, tilt);
     setRow("vDist", `${distToHold(t).toFixed(0)} µm`);
     setRow("vHeld", t.done ? T("готова") : t.held ? T("хваната") : T("свободна"), t.done || t.held ? "ok" : "");
   } else {
     const near = S.cells.length ? Math.min(...S.cells.map(distToHold)) : 0;
-    setRow("vClock", "–"); setRow("vTilt", "–");
+    setRow("vClock", "–"); setRow("vTilt", "–"); $("rollHint").hidden = true;
     setRow("vDist", S.cells.length ? `${near.toFixed(0)} µm` : "–");
     setRow("vHeld", T("няма до пипетата"));
   }
@@ -4488,7 +4531,7 @@ function Q1open() { Q.paused = true; $("help1").hidden = false; $("help1Close").
 function Q1close() { $("help1").hidden = true; Q.paused = false; }
 $("help1Close").onclick = () => Q1close();
 // „Какво ново“: от бутона в менюто; при първо отваряне на нова версия се показва веднъж само (4.9)
-const NEWS_VER = "4.9";
+const NEWS_VER = "4.9 (30.10)";                          // сменя се при всяко допълване - прозорецът се показва пак веднъж
 function newsOpen() { $("news").hidden = false; $("newsClose").focus(); }
 function newsClose() { $("news").hidden = true; try { localStorage.setItem("icsi_news", NEWS_VER); } catch (e) { /* няма достъп */ } }
 $("menuNews").onclick = newsOpen; $("newsClose").onclick = newsClose;
@@ -4641,6 +4684,7 @@ function applyRules(r) {
   TILT_TOL = num("stage3", "tilt_tol_deg", 1, 90, TILT_TOL);
   Z2_TOL = num("stage3", "equator_tol_um", 1, 100, Z2_TOL);
   CAPTURE = num("stage3", "capture_um", 5, 200, CAPTURE);
+  { const v = (r.stage3 || {}).practice_easy_start; if (v != null) EASY_START3 = /^(yes|да|1|true|on)$/i.test(String(v).trim()); }
   const sc = r.scoring || {}, n = (k, cur) => { const v = parseFloat(sc[k] ?? ""); return Number.isFinite(v) && v >= 0 ? v : cur; };
   SCORE.start = n("start_points", SCORE.start); SCORE.pass = n("pass_score", SCORE.pass);
   for (const k of Object.keys(SCORE.s2)) SCORE.s2[k] = n("sperm_" + k, SCORE.s2[k]);
