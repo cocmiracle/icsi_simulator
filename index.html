@@ -78,9 +78,8 @@ function setLang(code) {
 }
 </script>
 <script src="images/images.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap&subset=cyrillic" rel="stylesheet">
+<!-- шрифтът е локален (4.9, 11.11): fonts/fonts.css – без интернет -->
+<link href="fonts/fonts.css" rel="stylesheet">
 <style>
 :root {
   --bg: #E9EDF0;
@@ -322,6 +321,7 @@ label.anom input { accent-color: var(--accent); }
 .lastcheck { border-left: 3px solid var(--err); background: var(--btn); border-radius: 6px; padding: 8px 10px; margin: 4px 0 12px; font-size: 14px; }
 .lastcheck.ok { border-left-color: var(--ok); }
 .lastcheck[hidden] { display: none; }
+#menuDemo.on { border-color: var(--ok); color: var(--ok); }   /* демонстрацията е отворена */
 .lastcheck b { display: block; font-size: 12.5px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
 .lastcheck div + div { margin-top: 4px; }
 
@@ -389,6 +389,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
     <button class="btn fsBtn" id="menuFs" type="button">Цял екран</button>
     <a class="btn" id="menuGuide" href="docs/ICSI_rakovodstvo.pdf" target="_blank" rel="noopener">Ръководство за потребителя</a>
     <button class="btn" id="menuNews" type="button">Какво ново</button>
+    <button class="btn" id="menuDemo" type="button" title="Втори прозорец за проектор или телевизор: голям микроскоп, стъпка, защо и грешки; запис на филм">Демонстрация</button>
   </div>
   <ol class="stages">
     <li class="ready">
@@ -549,11 +550,19 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
       <li>Езици: български и английски (в менюто – „Език“).</li>
       <li>Етап 1: зрелият ооцит (MII) се завърта с полярното телце на 12 или 6 часа.</li>
       <li>Етап 2: сперматозоидът се удря в ниско спусната игла и се плъзга покрай нея; засмукване или изтласкване до него го мести и завърта.</li>
-      <li>Етапи 2, 3 и 5: натисната в дъното, иглата се влачи напред, после върхът се огъва нагоре и накрая се чупи.</li>
+      <li>Етапи 2, 3 и 5: натисната в дъното, иглата се плъзга напред (около 30 µm), после се огъва – връща се назад и се размазва – и след още около 20 µm се чупи; натискът се натрупва и на пресекулки; при вдигане първо се връща по същия път. Счупена игла = Слаб 2 за етапа.</li>
       <li>Етап 3: засмуканата клетка се вдига заедно с пипетата; под ▼ / ▲ пише коя пипета движат; иглата минава над клетката, но не и през нея; клетката не залепва.</li>
       <li>Етапи 3 и 5: полярното телце се вижда по-ясно; в „Упражнение“ е оградено с пунктирен кръг; етап 3 започва на 20x.</li>
       <li>Етап 3: вляво пише дали телцето е над или под фокуса и откъде да се докосне ооцитът, за да се търкаля към екватора; в „Упражнение“ телцето започва видимо.</li>
       <li>Етап 5: същите поправки и тук.</li>
+      <li>Етап 3: ооцитът се търкаля по-бавно и контролирано; когато се бута с иглата, основно се мести и телцето не изчезва.</li>
+      <li>Етап 2: засмукване или изтласкване до сперматозоида го мести (до 20–30 µm), но почти не сменя посоката му.</li>
+      <li>Етапи 2 и 5: силата на засмукване и изтласкване расте, докато се държи клавишът (слабо – средно – силно); силно изтласкан сперматозоид отива по-далеч.</li>
+      <li>Етапи 2 и 5: засмукване с връх извън капката вкарва минерално олио в иглата; изтласкано в капката – капка олио; в ооцита – всички точки.</li>
+      <li>Шрифтът е вграден – симулаторът изглежда еднакво и без интернет.</li>
+      <li>Етапи 2 и 5: капката е дълбока 100 µm – сперматозоидите плуват на различна височина, а неподвижните потъват на дъното; ясни са тези на височината на фокуса; засмуква се само сперматозоид на височината на върха на иглата.</li>
+      <li>Меню – „Демонстрация“: втори прозорец за проектор или телевизор с голям микроскоп, етап, стъпка, „защо“ и грешки; размерът на текста следва прозореца (A− / A+); запис на филм.</li>
+      <li>Етап 5: започва на 4x (виждат се и двете капки); в отчета – времето за намиране на ооцита; тялото на иглата вече не уврежда сперматозоидите.</li>
     </ul>
     <p class="hint">Ръководството за потребителя се отваря от бутона в менюто. Забележките – във формуляра за обратна връзка.</p>
     <div class="foot"><button class="btn primary" id="newsClose">Към симулатора</button></div>
@@ -717,7 +726,7 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
         <button class="btn hold" id="btnExp3" title="B, задръж">Изтласкай</button>
       </div>
       <button class="btn wide" id="btnHand3" title="M">Превключи на левак</button>
-      <p class="hint">Фокусът е на дъното, където плуват сперматозоидите. <kbd>Shift</kbd> забавя движението и потока.</p>
+      <p class="hint">Капката е дълбока 100 µm: ясни са сперматозоидите на височината на фокуса. <kbd>Shift</kbd> забавя.</p>
     </div>
     <div class="spacer"></div>
     <button class="btn primary big" id="btnCheck3" title="Enter">Провери</button>
@@ -990,8 +999,8 @@ a.btn { text-decoration: none; display: inline-flex; align-items: center; color:
 <div id="help3" class="modal" role="dialog" aria-modal="true" aria-labelledby="help3Title" hidden>
   <div class="help modal-card">
     <h2 id="help3Title">Етап 2: сперматозоидът (версия 4.9)</h2>
-    <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Фокусът е на дъното, където плуват сперматозоидите: вдигнатата пипета е размазана, а спусната до дъното е ясна.</p>
-    <p class="hint">Иглата и сперматозоидите: ако иглата е ниско (под ~3 µm над тях), сперматозоидът се удря в нея и се плъзга покрай стъклото; по-високо минава под нея. Засмукване или изтласкване близо до сперматозоид го придърпва или отблъсква и го завърта – така се нагласява напречно на върха. Опрян в дъното връх при още натиск се влачи напред, после се огъва нагоре, а задържаният натиск го чупи (−20 точки).</p>
+    <p>Инжекционната пипета се движи с джойстика на манипулатора (тук: влачене или стрелки), а блюдото с капката PVP се мести с предметната маса (режим „Мести блюдото“ или WASD). Капката PVP е дълбока 100 µm: сперматозоидите плуват по цялата ѝ дебелина, а неподвижните потъват на дъното. Ясни са тези на височината на фокуса (Z / X), другите са размазани. Засмуква се само сперматозоид на височината на върха на иглата (E / Q), а обездвижването (притискане на опашката) става на дъното.</p>
+    <p class="hint">Иглата и сперматозоидите: ако иглата е ниско (под ~3 µm над тях), сперматозоидът се удря в нея и се плъзга покрай стъклото; по-високо минава под нея. Засмукване или изтласкване близо до сперматозоид го придърпва или отблъсква и го завърта – така се нагласява напречно на върха. Опрян в дъното връх при още натиск се плъзга напред (около 30 µm), после се огъва и след още около 20 µm се чупи – тогава всички точки за етапа се губят (Слаб 2).</p>
     <p class="hand-line" id="help3Hand"></p>
     <h3>Задача, до <span data-lim="2">2 минути</span> на сперматозоид</h3>
     <ol>
@@ -1088,11 +1097,11 @@ const GAME = { practice: false, rulesSource: T("вградени") };
 const SCORE = {
   start: 100, pass: 70,
   s2: { bad_morphology: 30, immotile: 25, damaged: 20, head_first: 10, bottom_drag: 5, failed_check: 5, failed_check_max: 10, out_of_drop: 10,
-        lost: 30, needle_broken: 20 },                // lost: само в етап 5 - сперматозоидът излезе от иглата
-  s3: { pb_position: 35, pb_focus: 35, wrong_height: 10, failed_check: 5, failed_check_max: 20, needle_broken: 10 },
+        lost: 30, needle_broken: 100, oil_drop: 20 },  // oil_drop: олио, изтласкано в капката                // lost: само в етап 5 - сперматозоидът излезе от иглата
+  s3: { pb_position: 35, pb_focus: 35, wrong_height: 10, failed_check: 5, failed_check_max: 20, needle_broken: 100 },
   s1: { immature_as_mii: 40, mii_as_immature: 30, wrong_maturity: 20, missed_anomaly: 15, false_anomaly: 10, pb_position: 15 },
   s4: { opposite_membrane: 25, damaged: 25, no_breach: 20, not_delivered: 15, medium: 5, inj_height: 5, failed_check: 5, failed_check_max: 5,
-        two_sperm: 100, spilled: 15 },                // два в един ооцит: клетката е 0; изгубен в средата (при няколко в иглата)
+        two_sperm: 100, spilled: 15, oil_in_oocyte: 100 },   // олио в ооцита: всички точки (11.11)                // два в един ооцит: клетката е 0; изгубен в средата (при няколко в иглата)
 };
 const PEN_LABEL = {
   bad_morphology: T("Сперматозоид с дефект на морфологията"), immotile: T("Неподвижен (нежизнеспособен) сперматозоид"),
@@ -1105,6 +1114,7 @@ const PEN_LABEL = {
   two_sperm: T("Два сперматозоида в един ооцит"), spilled: T("Изгубен сперматозоид (излезе в средата)"),
   out_of_drop: T("Иглата излезе от капката"),
   needle_broken: T("Счупена игла (натиск в дъното)"),
+  oil_drop: T("Изтласкано минерално олио в капката"), oil_in_oocyte: T("Минерално олио в ооцита"),
 };
 // еднакви ключове с различен смисъл по етапи (напр. damaged): надписът на етапа има предимство
 const PEN_LABEL_ST = { s2: { damaged: T("Повреден сперматозоид при обездвижването") }, s4: { damaged: T("Увреден ооцит (твърде много засмукване)") } };
@@ -1132,7 +1142,8 @@ function renderPen(pen, errsId, scoreId, expired) {
   el.innerHTML = `${sc} / ${SCORE.start}<small>${expired ? T("времето изтече: 0 точки") : T("точки за текущата клетка")}</small>`;
 }
 function avgLine(results, total) {
-  // средно от всички клетки (незавършените са 0) и дали е над прага
+  // средно от всички клетки (незавършените са 0) и дали е над прага; счупена игла = Слаб 2 за етапа (11.11, тестерите)
+  if (!GAME.practice && results.broken) return T`Счупена игла: всички точки за етапа се губят – ${gradeOf(0)}, ${T("неиздържан")}`;
   if (GAME.practice || !results.length) return "";
   const sum = results.reduce((a, r) => a + (r.score || 0), 0), avg = Math.round(sum / Math.max(total, results.length));
   return T`Средно: ${avg} / ${SCORE.start} – ${gradeOf(avg)}, ${avg >= SCORE.pass ? T("издържан") : T("неиздържан")} (праг ${SCORE.pass})`;
@@ -1183,7 +1194,7 @@ const PLACE_R = 480, MIN_GAP = 25, TARGET_RANGE = ZONA_OUT * 2.3;
 // височина на holding пипетата: ооцитът лежи на дъното, екваторът му е на височина ~ радиуса му
 // как се върти ооцитът (rules.ini, [stage3] rotation): "pipette" - с инжекционната пипета, "button" - с режим „Върти“ и клавиши, "both"
 let ROT3 = "pipette";
-const INJ_TIP_R = 3.6, INJ_SPEED = 80, INJ_ROLL = 0.9;   // върхът на инжекционната пипета (µm), скорост, „сцепление“ при търкаляне
+const INJ_TIP_R = 3.6, INJ_SPEED = 80, INJ_ROLL = 0.35;   // 11.11: 0.9 -> 0.35, телцето не „изчезва“ при бутане   // върхът на инжекционната пипета (µm), скорост, „сцепление“ при търкаляне
 let Z2_TOL = 15; const Z2_EQ = ZONA_OUT, Z2_START = ZONA_OUT,   // holding пипетата започва на екватора
      ROLL2 = 0.9, Z2_MAX = 150, Z2_SPEED = 40, Z2_BLUR = 40, PIP_SPEED2 = 80;
 // 4.9 (обратна връзка по 4.8): инжекционната игла се вдига над клетката (горе тя е на 2 × 78 µm);
@@ -1382,8 +1393,9 @@ function rollStep() {
     if (vn > 0.5 * vtl) continue;                  // върхът се отдръпва: клетката не се върти и не го следва (4.9)
     if (moved > 0 && vtl > 0.05) {
       if (c.held) { warnHeld(); continue; }
+      const pushing = vn < -0.3 * vtl;            // бута ооцита (не се плъзга по него): основно се мести, малко се върти
       rotateCell(c, [n[1] * vt[2] - n[2] * vt[1], n[2] * vt[0] - n[0] * vt[2], n[0] * vt[1] - n[1] * vt[0]],
-                 INJ_ROLL * vtl / ZONA_OUT);
+                 INJ_ROLL * (pushing ? 0.3 : 1) * vtl / ZONA_OUT);
       startTimerIfReady();
       // върхът леко притиска ооцита, докато се плъзга: контактът се запазва (ооцитът следва върха настрани)
       if (vn < 0) {                                // само докато върхът натиска клетката (4.9: не залепва)
@@ -1506,7 +1518,7 @@ function farHint2(d) {
 }
 let lastZHint2 = -1e9;
 function breakNeedle2() {
-  penalize(S.pen, "needle_broken");
+  penalize(S.pen, "needle_broken"); S.results.broken = true;
   toast([T("Иглата се счупи от натиска в дъното!"), T("След малко ще бъде сменена с нова, вдигната над дъното.")], "err", 2600);
   S.bendInj.onSwap = () => { S.zi = Z2_EQ + 40; S.injPrev = [S.inj[0], S.inj[1], S.zi]; toast([T("Иглата е сменена с нова.")], "info", 2000); };
 }
@@ -1693,13 +1705,13 @@ function keyControl(dt) {
   // бутоните ▼ / ▲ действат на избраната пипета; E/Q - holding, U/O - инжекционната
   const btnDz = (S.holdUp ? 1 : 0) - (S.holdDown ? 1 : 0);
   const dz = (has("q") ? 1 : 0) - (has("e") ? 1 : 0) + (S.activePip === "hold" ? btnDz : 0);
-  if (!dz && S.bendHold) S.bendHold.press = 0;
   if (dz) {
     startTimerIfReady();
     const held = heldCell(), zmin = held ? Math.min(S.z, Z2_EQ) : 0;      // с клетката: тя не слиза под дъното
-    bottomPress(S.bendHold || (S.bendHold = {}), dz < 0 && !held && S.z <= 1e-6, dt,          // по дъното: плъзга се напред
-                u => { movePip2(-S.side * u * fine, 0); bottomHint2(); }, null);
-    S.z = Math.max(zmin, Math.min(Z2_MAX, S.z + Math.sign(dz) * Z2_SPEED * fine * dt));
+    const r = held ? Math.sign(dz) * Z2_SPEED * fine * dt                   // по дъното: плъзга се напред (не се чупи)
+      : bottomMove(S.bendHold || (S.bendHold = {}), Math.sign(dz) * Z2_SPEED * fine * dt, S.z <= 1e-6, dt,
+                   u => { movePip2(-S.side * u, 0); if (u > 0) bottomHint2(); }, null);
+    S.z = Math.max(zmin, Math.min(Z2_MAX, S.z + r));
   }
   if (injOn()) {
     const keysInj = ROT3 === "pipette";          // при "both" клавишите въртят, пипетата е с мишка
@@ -1707,12 +1719,10 @@ function keyControl(dt) {
     if (ix || iy) { startTimerIfReady(); const n = Math.hypot(ix, iy); moveInj(ix / n * INJ_SPEED * fine * dt, iy / n * INJ_SPEED * fine * dt); }
     const dzi = (keysInj ? (has("u") ? 1 : 0) - (has("o") ? 1 : 0) : 0) + (S.activePip === "inj" ? btnDz : 0);
     const bi = S.bendInj || (S.bendInj = { onSwap: () => toast([T("Иглата е сменена с нова.")], "info", 2000) });
-    bottomPress(bi, dzi < 0 && S.zi <= 1e-6, dt,                                    // дъното: влачене, огъване, чупене
-                u => { moveInj(S.side * u * fine, 0); bottomHint2(); }, breakNeedle2, bendHint2);
-    if (dzi && !(bi.broken > 0)) {                                                  // счупената не се движи до смяната
-      startTimerIfReady();
-      S.zi = Math.max(0, Math.min(Z2I_MAX, S.zi + Math.sign(dzi) * Z2_SPEED * fine * dt));
-    }
+    const ri = bottomMove(bi, Math.sign(dzi) * Z2_SPEED * fine * dt, S.zi <= 1e-6, dt,   // дъното: плъзгане, огъване, чупене
+                          u => { moveInj(S.side * u, 0); if (u > 0 && !bi.bend) bottomHint2(); }, breakNeedle2, bendHint2);
+    if (dzi) startTimerIfReady();
+    S.zi = Math.max(0, Math.min(Z2I_MAX, S.zi + ri));
   }
   if (ROT3 === "pipette") { rollStep(); return; }   // ооцитът се върти само с пипетата
   rollStep();
@@ -2135,20 +2145,29 @@ function drawNeedleSprite(g, o) {
   g.restore();
   return true;
 }
-// ОБЩО за етапи 2, 3 и 5 (4.9, по шефа и тестера): опреният в дъното връх при още натиск надолу се огъва и плъзга
-// напред; задържаният натиск го чупи - иглата се сменя с нова (губи се време, а сперматозоидите в нея се губят)
-const BEND = { SLIDE: 25, DRAG_S: 0.6, BREAK_S: 1.5, SWAP_S: 2.5 };
-// натиск в дъното, по фази (29.10, по практиката): 1) до DRAG_S s върхът се влачи по дъното напред; 2) после спира и се
-// огъва нагоре (размазва се, скъсява се) - предупреждение; 3) при BREAK_S s се чупи: отчупен връх SWAP_S s, после нова игла.
-// st: { press, bend (0..1), broken (оставащи s) } - вика се на всеки кадър (pressing = натиска се надолу при опрян връх)
-function bottomPress(st, pressing, dt, slide, onBreak, onBend) {
-  if (st.broken > 0) { st.broken -= dt; if (st.broken <= 0) { st.broken = 0; st.bend = 0; if (st.onSwap) st.onSwap(); } return; }
-  if (!pressing) { st.press = 0; st.bend = Math.max(0, (st.bend || 0) - 3 * dt); return; }      // пуснат: върхът се изправя
-  st.press = (st.press || 0) + dt;
-  if (st.press < BEND.DRAG_S || !onBreak) { slide(BEND.SLIDE * dt); return; }                   // 1) влачене
-  if (!st.bend && onBend) onBend();
-  st.bend = Math.min(1, (st.press - BEND.DRAG_S) / (BEND.BREAK_S - BEND.DRAG_S));            // 2) огъване нагоре
-  if (st.press >= BEND.BREAK_S) { st.press = 0; st.bend = 0; st.broken = BEND.SWAP_S; onBreak(); }   // 3) чупене
+// ОБЩО за етапи 2, 3 и 5 – иглата в дъното, по разстояние (11.11, по тестерите): върхът опира дъното; при още натиск
+// надолу 1) се плъзга напред до SLIDE_UM µm; 2) после се огъва - на екрана се мести назад и се размазва от върха към тялото;
+// 3) след още (BREAK_UM - SLIDE_UM) µm се чупи. Натискът се натрупва (и на пресекулки - позицията на манипулатора остава);
+// при вдигане иглата първо се връща по същия път до мястото, откъдето е тръгнала, и чак после се вдига (и размазва).
+const BEND = { SLIDE_UM: 30, BREAK_UM: 50, BACK: 0.6, SWAP_S: 2.5 };
+// st: { p (натрупан натиск, µm), f (изместване напред, µm), bend (0..1), broken (оставащи s) }
+// dzUm: заповяданото вертикално движение в този кадър (µm, < 0 надолу); atBottom: върхът опира дъното.
+// Връща колко от dzUm да се приложи към височината (0, докато иглата е натисната или счупена).
+function bottomMove(st, dzUm, atBottom, dt, slide, onBreak, onBend) {
+  if (st.broken > 0) { st.broken -= dt; if (st.broken <= 0) { st.broken = 0; st.bend = 0; if (st.onSwap) st.onSwap(); } return 0; }
+  st.p = st.p || 0; st.f = st.f || 0;
+  let rest = dzUm;
+  if (dzUm < 0 && atBottom) { st.p += -dzUm; rest = 0; }                       // натиск: натрупва се
+  else if (dzUm > 0 && st.p > 0) { const r = Math.min(dzUm, st.p); st.p -= r; rest = dzUm - r; }   // вдигане: обратният път
+  else return dzUm;
+  if (!onBreak) st.p = Math.min(st.p, BEND.SLIDE_UM);                          // holding пипетата не се чупи
+  const f = st.p <= BEND.SLIDE_UM ? st.p : BEND.SLIDE_UM - (st.p - BEND.SLIDE_UM) * BEND.BACK;
+  const was = st.bend || 0;
+  st.bend = st.p <= BEND.SLIDE_UM ? 0 : Math.min(1, (st.p - BEND.SLIDE_UM) / (BEND.BREAK_UM - BEND.SLIDE_UM));
+  slide(f - st.f); st.f = f;
+  if (!was && st.bend > 0 && onBend && dzUm < 0) onBend();
+  if (onBreak && st.p >= BEND.BREAK_UM) { st.p = 0; st.f = 0; st.bend = 0; st.broken = BEND.SWAP_S; onBreak(); }
+  return rest;
 }
 const needleLook = st => st ? { bend: st.bend || 0, broken: st.broken > 0 } : {};
 function needleOuter(d) { return Math.min(NEEDLE.MAX_R, NEEDLE.TIP_R + NEEDLE.TAPER * Math.max(0, d)); }
@@ -2608,6 +2627,9 @@ const C3 = {
   // 4.9 (шефът, т. 8+): сперматозоидът е висок ~3 µm - иглата по-ниско го спира (плъзга се по нея), по-високо минава над него;
   // засмукване/изтласкване близо до него го мести и завърта (побутване), до NUDGE_R µm от върха, с NUDGE µm/s при върха
   SPERM_TOP: 3, NUDGE_R: 30, NUDGE: 30,
+  // 12.11 (отговорите): капката е 100 µm и сперматозоидите плуват по цялата ѝ дебелина; неподвижните потъват на дъното.
+  // Засмукват се, ако са на височината на върха (до Z_MATCH µm разлика); притискат се само на дъното (до Z_BOTTOM µm).
+  DEPTH: 100, BOTTOM_SHARE: 0.35, SINK: 3, Z_MATCH: 6, Z_BOTTOM: 4,
 };
 C3.BODY_LEN = C3.HEAD_LEN / 2 + C3.MID_LEN + C3.TAIL_LEN;
 const MORPH = { normal: T("нормална"), large: T("голяма глава"), small: T("малка глава"), amorphous: T("аморфна глава"), doublehead: T("двойна глава"),
@@ -2637,6 +2659,9 @@ class Sperm {
     this.wasMotile = motile; this.motile = motile; this.immobilized = false; this.damaged = false;
     this.kinkS = null; this.kinkDir = 1;
     this.inside = false; this.uHead = 0; this.dirIn = 1;          // dirIn +1: опашката е по-навътре
+    // височина над дъното: неподвижните са на дъното; от подвижните част са до дъното, останалите - по цялата капка
+    this.z = !motile ? 0 : Math.random() < C3.BOTTOM_SHARE ? uni(0, 2) : uni(0, C3.DEPTH - 4);
+    this.pitch = 0;                                                 // наклон нагоре/надолу при плуването
     this.amorph = Array.from({ length: 10 }, () => uni(0.7, 1.3));
   }
   headScale() { return { large: [1.5, 1.45], small: [0.62, 0.65], tapered: [1.35, 0.55] }[this.morph] || [1, 1]; }
@@ -2662,7 +2687,16 @@ class Sperm {
   }
   tailEnd(t) { const p = this.body(t).pts; return p[p.length - 1]; }
   updateFree(dt) {
+    if (!this.motile && !this.inside && !this.pin) this.z = Math.max(0, (this.z || 0) - C3.SINK * dt);   // потъва
     if (!this.motile || this.inside || this.pin) return;              // притиснатата опашка го държи на място
+    // нагоре-надолу: наклонът се мени случайно и се връща към хоризонтала; в дъното и горе се обръща
+    // до дъното се задържат (плуват по повърхността, както край стената); рядко се откъсват нагоре
+    const nearB = this.z < 3;
+    this.pitch += (-this.pitch / (nearB ? 0.3 : 1.5)) * dt + (nearB ? 0.12 : 0.35) * Math.sqrt(dt) * gauss();
+    this.pitch = Math.max(-0.5, Math.min(0.5, this.pitch));
+    this.z = (this.z || 0) + Math.sin(this.pitch) * this.speed * dt;
+    if (this.z < 0) { this.z = 0; this.pitch = Math.abs(this.pitch); }
+    if (this.z > C3.DEPTH - 4) { this.z = C3.DEPTH - 4; this.pitch = -Math.abs(this.pitch); }
     const wrap = a => ((a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;
     if (this.swim === "circle") this.heading += this.spin * this.speed / C3.CIRCLE_R * dt;       // кръг с радиус ~2 глави
     else if (this.swim === "zigzag") {                                                             // начупена линия
@@ -2722,6 +2756,7 @@ function makeSperm(n, minGood = 4) {
   return out;
 }
 function newDrop3() {
+  T3.shard = null; T3.oilDrops = []; T3.oil = null;
   T3.F = 0;                                              // фокусът: на дъното, при сперматозоидите
   T3.pen = newPen("s2");
   if (typeof pend3 !== "undefined") pend3 = [0, 0];
@@ -2753,7 +2788,7 @@ function nearestFree(maxD = 70) {
 let events3 = [];
 function checkPress(a, b) {
   for (const s of T3.sperm) {
-    if (s.inside || s.damaged) continue;
+    if (s.inside || s.damaged || (s.z || 0) > C3.Z_BOTTOM) continue;      // по-високо от дъното - иглата минава под него
     const { neck, pts } = s.body(T3.t);
     if (segDist(s.pos, a, b) < C3.CONTACT + C3.HEAD_W / 2 * s.headScale()[1] ||
         segDist(neck, a, b) < C3.CONTACT || segDist(pts[0], a, b) < C3.CONTACT) {
@@ -2821,35 +2856,81 @@ function stunStep3(dt) {
     ins.uHead -= C3.STUN_SPEED * dt;
     if (!ins.stunWarned && ins.uHead > 0) { ins.stunWarned = true; events3.push([[T("Сперматозоидът е само зашеметен и плува към върха."), T("Засмуквай леко, за да го задържиш в иглата.")], "warn"]); }
     if (ins.uHead + C3.BODY_LEN < 0) {
-      ins.inside = false; ins.pos = axisPoint(ins.uHead); ins.heading = Math.atan2(0, -side);
+      ins.inside = false; ins.pos = axisPoint(ins.uHead); ins.heading = Math.atan2(0, -side); ins.z = Math.max(0, T3.z - C3.Z_CONTACT);
       ins.stunned = false; ins.immobilized = false; ins.motile = true; ins.kinkS = null; ins.stunWarned = false;
       events3.push([[T("Зашеметеният сперматозоид излезе от иглата и плува."), T("Обездвижи го отново.")], "warn"]);
     }
   }
 }
 const needleBroken3 = () => (!$("stage3").hidden && T3.bend && T3.bend.broken > 0) || (!$("stage5").hidden && S5.bend && S5.bend.broken > 0);
+// сила на засмукване/изтласкване (11.11, тестерите): колкото по-дълго се държи клавишът, толкова по-силно - от 0.4 до 2
+// за 1.5 s; твърде силно: сперматозоидът бързо минава през иглата и трудно се управлява, при изтласкване отива далеч
+const FLOW_RAMP = { MIN: 0.4, MAX: 2, T: 1.5 };
+function flowRamp3(dir, dt, fine) {
+  if (!dir || dir !== T3.flowDir) { T3.flowHold = 0; T3.flowDir = dir; }
+  else T3.flowHold = (T3.flowHold || 0) + dt;
+  const k = FLOW_RAMP.MIN + (FLOW_RAMP.MAX - FLOW_RAMP.MIN) * Math.min(1, (T3.flowHold || 0) / FLOW_RAMP.T);
+  T3.flowK = dir ? (fine ? Math.min(k, FLOW_RAMP.MIN) : k) : 0;
+}
+const flowWord3 = () => !T3.flow ? "" : T3.flowK < 0.8 ? T(" (слабо)") : T3.flowK < 1.5 ? T(" (средно)") : T(" (силно)");
+// минерално олио (11.11): иглата е пълна с олио, а капките са покрити с олио. Засмукване с връх в олиото (извън капката)
+// вкарва олио във върха; после засмукването в средата го отмества навътре (depth). При изтласкване олиото излиза след
+// средата пред него: в капката - капки олио (по-тъмна, дебела стена, понякога няколко залепени); в ооцита - всички точки.
+function tipInOil3() {
+  if (!$("stage5").hidden) { const td = tipDish5(); return !inPVP5(td) && !inOoDrop5(td); }
+  const b = tip3(); return Math.hypot(b[0], b[1]) > C3.DROP_R;
+}
+function oilStep3(v) {                                 // v: колко µm течност мина през върха (+ навътре, - навън)
+  const o = T3.oil || (T3.oil = { len: 0, depth: 0, out: 0 });
+  if (v > 0) {
+    if (tipInOil3()) { o.len += v; o.depth = 0; }
+    else if (o.len > 0) o.depth += v;
+    return 0;
+  }
+  let e = -v;
+  if (o.len <= 0) return 0;
+  const d = Math.min(o.depth, e); o.depth -= d; e -= d;
+  if (e <= 0) return 0;
+  const out = Math.min(o.len, e); o.len -= out;
+  return out;                                           // колко олио излезе от върха
+}
+function oilDrops3(amount, at) {
+  // олиото излиза от върха като една капка, която расте, докато се изтласква; ако върхът се е преместил - нова до нея
+  if (tipInOil3()) return;                              // в олиото - нищо не се вижда
+  T3.oilDrops = T3.oilDrops || [];
+  const ahead = [at[0] - side3() * 2, at[1]];
+  let d = T3.oilDrops.length ? T3.oilDrops.at(-1) : null;
+  if (!d || Math.hypot(d.pos[0] - ahead[0], d.pos[1] - ahead[1]) > d.r + 6) {
+    d = { pos: [...ahead], r: 4 }; T3.oilDrops.push(d);
+    if (T3.oilDrops.length > 30) T3.oilDrops.shift();
+    penalize(T3.pen, "oil_drop");
+    events3.push([[T("От иглата излезе минерално олио: капка олио в капката!"), T("Олио влиза, ако засмучеш с връх извън капката. Внимавай да не го вкараш в ооцита.")], "err"]);
+  }
+  d.r = Math.min(28, Math.cbrt(d.r ** 3 + 150 * amount));
+  d.pos = [ahead[0] - side3() * d.r, ahead[1]];         // капката е пред върха и расте напред
+}
 function flow3(dt, fine) {
   if (needleBroken3()) return;                         // счупената игла не засмуква до смяната
-  const v = C3.FLOW * (fine ? FINE : 1) * dt, tp = tip3(), side = side3();
+  const v = C3.FLOW * (fine ? FINE : 1) * dt * (T3.flowK || 1), tp = tip3(), side = side3();
+  if (T3.flow) { const out = oilStep3(T3.flow * v); if (out > 0) oilDrops3(out, tp); }
   const insList = insideList();
   if (insList.length && T3.flow) {
     for (const ins of insList) {                       // всички в иглата се движат заедно с течността
       ins.uHead += T3.flow * v;
       const uTail = ins.uHead + ins.dirIn * C3.BODY_LEN;
       if (Math.max(ins.uHead, uTail) < 0) {
-        ins.inside = false;
-        ins.pos = axisPoint(ins.uHead);
+        ins.inside = false; ins.z = Math.max(0, T3.z - C3.Z_CONTACT);
+        ins.pos = axisPoint(ins.uHead - Math.max(0, (T3.flowK || 1) - 1) * 25);   // силно изтласкан - по-далеч (11.11)
         ins.heading = ins.dirIn > 0 ? Math.atan2(0, -side) : Math.atan2(0, side);
         events3.push([[T("Сперматозоидът е изтласкан от пипетата.")], "info"]);
       }
     }
   }
-  if (T3.flow && T3.z <= C3.Z_ASP + 4) nudge3(dt, fine);   // течението до върха мести и завърта сперматозоидите наоколо
+  if (T3.flow) nudge3(dt, fine);   // течението до върха мести и завърта сперматозоидите наоколо
   if (insList.length >= T3.load) return;              // иглата е пълна
   if (T3.flow <= 0) return;
-  if (T3.z > C3.Z_ASP) { tipHighHint(); return; }   // върхът е високо над сперматозоидите
   const best = aspCandidate();
-  if (!best) return;
+  if (!best) { heightHint3(); return; }
   const { s, end, d, te } = best, p = end === "head" ? s.pos : te;
   if (d < 1.5) {
     s.inside = true; s.motile = s.motile && !s.immobilized;
@@ -2863,17 +2944,19 @@ function flow3(dt, fine) {
 function nudge3(dt, fine) {
   // засмукване: към върха, изтласкване: от върха; по-силно отблизо. Краят, който е по-близо до върха, се мести повече,
   // затова сперматозоидът се и завърта - така се нагласява напречно на върха (4.9, по шефа)
-  const tp = tip3(), R = C3.NUDGE_R, k = T3.flow * C3.NUDGE * (fine ? FINE : 1);
+  const tp = tip3(), R = C3.NUDGE_R, k = T3.flow * C3.NUDGE * (fine ? FINE : 1) * Math.min(1.5, T3.flowK || 1);
   const at = p => { const dx = tp[0] - p[0], dy = tp[1] - p[1], d = Math.hypot(dx, dy);
                     if (d >= R || d < 1e-6) return [0, 0]; const w = k * (1 - d / R) / d; return [dx * w, dy * w]; };
   for (const sp of T3.sperm) {
     if (sp.inside || sp.pin) continue;
-    const te = sp.tailEnd(T3.t), fh = at(sp.pos), ft = at(te);
+    const hz = Math.max(0, 1 - Math.abs((sp.z || 0) - Math.max(0, T3.z - C3.Z_CONTACT)) / R);   // по височина
+    if (hz <= 0) continue;
+    const te = sp.tailEnd(T3.t), fh = at(sp.pos).map(v => v * hz), ft = at(te).map(v => v * hz);
     if (!fh[0] && !fh[1] && !ft[0] && !ft[1]) continue;
     const L = Math.max(1, Math.hypot(te[0] - sp.pos[0], te[1] - sp.pos[1])), b = [(te[0] - sp.pos[0]) / L, (te[1] - sp.pos[1]) / L];
     const mv = [(fh[0] + ft[0]) / 2, (fh[1] + ft[1]) / 2], dl = [ft[0] - fh[0], ft[1] - fh[1]];
     sp.pos = [sp.pos[0] + mv[0] * dt, sp.pos[1] + mv[1] * dt];
-    sp.heading += (b[0] * dl[1] - b[1] * dl[0]) / L * dt;
+    sp.heading += (b[0] * dl[1] - b[1] * dl[0]) / L * dt * (sp.motile ? 0.2 : 1);   // подвижният иска да следва пътя си
   }
 }
 // кой сперматозоид ще влезе при засмукване: краят му е при върха; обездвиженият е с предимство
@@ -2881,6 +2964,7 @@ function aspCandidate() {
   const tp = tip3(); let best = null;
   for (const s of T3.sperm) {
     if (s.inside) continue;
+    if (Math.abs((s.z || 0) - Math.max(0, T3.z - C3.Z_CONTACT)) > C3.Z_MATCH) continue;   // на друга височина
     const hd = Math.hypot(s.pos[0] - tp[0], s.pos[1] - tp[1]);
     const te = s.tailEnd(T3.t), td = Math.hypot(te[0] - tp[0], te[1] - tp[1]);
     const [end, d] = hd <= td ? ["head", hd] : ["tail", td];
@@ -2897,14 +2981,33 @@ function dragHint3() {
 }
 function bendHint3() { lastBendHint3 = performance.now(); events3.push([[T("Върхът се огъва нагоре!"), T("Още натиск ще счупи иглата: вдигни я (Q).")], "warn"]); }
 function breakNeedle3(st, setZ) {
+  if (Math.random() < 0.6) { const tp = tip3(); T3.shard = { pos: [tp[0] - side3() * 4, tp[1] + uni(-3, 3)], ang: uni(-0.4, 0.4) }; }
   // счупена игла: сперматозоидите в нея излизат и се губят; след малко - нова игла, вдигната над дъното
   penalize(T3.pen, "needle_broken");
+  (!$("stage5").hidden ? S5.results : T3.results).broken = true;
   const tp = tip3();
   for (const sp of T3.sperm) if (sp.inside) { sp.inside = false; sp.pos = [tp[0] + uni(-6, 6), tp[1] + uni(-6, 6)]; }
   events3.push([[T("Иглата се счупи от натиска в дъното!"), T("Сперматозоидите в нея са изгубени. След малко ще бъде сменена с нова.")], "err"]);
   st.onSwap = () => { setZ(20); events3.push([[T("Иглата е сменена с нова.")], "info"]); };
 }
 let lastHighHint = -1e9;
+function heightHint3() {
+  // наблизо има сперматозоид, но на друга височина: подсказка накъде (иглата и фокусът)
+  const tp = tip3(), zt = Math.max(0, T3.z - C3.Z_CONTACT);
+  let near = null, bd = C3.ASP_RANGE + 6;
+  for (const sp of T3.sperm) {
+    if (sp.inside) continue;
+    const d = Math.hypot(sp.pos[0] - tp[0], sp.pos[1] - tp[1]);
+    if (d < bd) { bd = d; near = sp; }
+  }
+  if (!near) return;
+  const now = performance.now();
+  if (now - lastHighHint < 3000) return;
+  lastHighHint = now;
+  const up = (near.z || 0) > zt;
+  events3.push([[up ? T`Сперматозоидът е по-високо (около ${Math.round(near.z - zt)} µm над върха).` : T`Сперматозоидът е по-ниско (около ${Math.round(zt - near.z)} µm под върха).`,
+                 up ? T("Вдигни иглата (Q) и фокуса (X).") : T("Спусни иглата (E) и фокуса (Z).")], "info"]);
+}
 function tipHighHint() {
   const now = performance.now();
   if (now - lastHighHint > 3000) { lastHighHint = now; events3.push([[T("Върхът е високо над дъното: засмукването"), T("не стига до сперматозоида. Спусни го (E).")], "warn"]); }
@@ -2965,9 +3068,10 @@ function underPipette(p) {                         // точката е под �
   const [tx, ty] = tip3(), d = side3() * (p[0] - tx);
   return d >= -1 && Math.abs(p[1] - ty) <= pipOuter(Math.max(0, d)) + 1.5;
 }
-function needleLow3(p) {                            // долният ръб на иглата над тази точка е по-ниско от сперматозоида
-  const d = Math.max(0, side3() * (p[0] - tip3()[0]));
-  return T3.z - pipOuter(d) < C3.SPERM_TOP;
+function needleHits3(sp) {                          // иглата е на височината на сперматозоида (12.11: и над дъното)
+  const d = Math.max(0, side3() * (sp.pos[0] - tip3()[0])), r = pipOuter(d);
+  const zc = Math.max(0, T3.z - C3.Z_CONTACT) + r;       // оста на иглата над дъното
+  return Math.abs(zc - ((sp.z || 0) + C3.SPERM_TOP / 2)) < r + C3.SPERM_TOP / 2;
 }
 function moveDish3(dx, dy) {           // блюдото надясно = изгледът (и върхът) наляво в блюдото
   const nc = [T3.cam[0] - dx, T3.cam[1] - dy];
@@ -3149,7 +3253,7 @@ function ui3() {
   if (T3.pen) renderPen(T3.pen, "errs3", "score3", T3.session.state === "expired");
   const ins = insideSperm();
   set3("w3Z", `${T3.z.toFixed(0)} µm${pressed3() ? T(", допира") : ""}`, pressed3() ? "ok" : "");
-  set3("w3Flow", { 1: T("засмукване"), "-1": T("изтласкване"), 0: T("няма") }[T3.flow], T3.flow ? "on" : "");
+  set3("w3Flow", { 1: T("засмукване"), "-1": T("изтласкване"), 0: T("няма") }[T3.flow] + flowWord3(), T3.flow ? (T3.flowK >= 1.5 ? "warn" : "on") : "");
   if (ins) {
     set3("w3In", T3.load > 1 ? T`${insideList().length} от ${T3.load}` : T("да"), insideList().length >= T3.load ? "ok" : "");
     set3("w3Immob", ins.damaged ? T("повреден") : ins.immobilized ? T("да") : T("не"), ins.immobilized && !ins.damaged ? "ok" : "bad");
@@ -3212,6 +3316,30 @@ function drawSperm(sp, head, heading, neck, pts, fade) {
   g.fillStyle = sp.damaged ? COL3.damaged : COL3.head; g.fill();
   g.strokeStyle = COL3.headEdge; g.lineWidth = Math.max(1, 0.5 * s); g.stroke();
 }
+// Всеки сперматозоид е ясен или размазан според разстоянието си до фокуса (капка 100 µm). За да е бързо (филтърът blur
+// е скъп за всеки поотделно), размазаните се рисуват в малко платно и се разтягат: по-малко платно - по-размазано.
+const BLUR_BUF3 = [null, null];
+function drawFreeAll3(F) {
+  F = F ?? 0;
+  const s = scale3(), bins = [[], [], []];
+  for (const sp of T3.sperm) {
+    if (sp.inside) continue;
+    const dz = Math.abs((sp.z || 0) - F), px = dz * BLUR_PER_UM[T3.obj] * s;
+    bins[px < 1.5 ? 0 : px < 5 ? 1 : 2].push([sp, dz]);
+  }
+  [[2, 6], [1, 2.5]].forEach(([b, k], i) => {               // първо най-размазаните, после средните
+    if (!bins[b].length) return;
+    const w = Math.max(1, Math.ceil(W3 / k)), h = Math.max(1, Math.ceil(H3 / k));
+    const c = BLUR_BUF3[i] || (BLUR_BUF3[i] = document.createElement("canvas"));
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    const g = c.getContext("2d"); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, w, h); g.setTransform(1 / k, 0, 0, 1 / k, 0, 0);
+    const keep = ctx3; ctx3 = g;
+    try { for (const [sp, dz] of bins[b]) { g.globalAlpha = Math.max(0.2, 1 - dz / 35); drawFree(sp); } }
+    finally { ctx3 = keep; }
+    ctx3.save(); ctx3.imageSmoothingEnabled = true; ctx3.drawImage(c, 0, 0, W3, H3); ctx3.restore();
+  });
+  for (const [sp, dz] of bins[0]) { ctx3.save(); ctx3.globalAlpha = Math.max(0.2, 1 - dz / 35); drawFree(sp); ctx3.restore(); }
+}
 function drawFree(sp) {
   const { neck, pts } = sp.body(T3.t);
   drawSperm(sp, sp.pos, sp.heading, neck, pts, false);
@@ -3249,12 +3377,21 @@ function draw3() {
   const [dx, dy] = w2s3(0, 0);
   g.beginPath(); g.arc(dx, dy, C3.DROP_R * s, 0, 2 * Math.PI); g.fillStyle = COL3.pvp; g.fill();
   g.lineWidth = Math.max(2, 3 * s); g.strokeStyle = COL3.edge; g.stroke();
+  for (const od of T3.oilDrops || []) {             // капки минерално олио: по-тъмна и по-дебела стена (11.11)
+    const [ox, oy] = w2s3(...od.pos), R = od.r * s;
+    g.beginPath(); g.arc(ox, oy, R, 0, 2 * Math.PI); g.fillStyle = "rgba(232,228,205,0.55)"; g.fill();
+    g.lineWidth = Math.max(2, 0.18 * R); g.strokeStyle = "rgba(55,55,48,0.75)"; g.stroke();
+    g.beginPath(); g.arc(ox - R * 0.3, oy - R * 0.3, R * 0.18, 0, 2 * Math.PI); g.fillStyle = "rgba(255,255,255,0.5)"; g.fill();
+  }
+  if (T3.shard) {                                   // отчупеното парче на дъното (11.11)
+    const [px, py] = w2s3(...T3.shard.pos), L = 9 * s, w = Math.max(1.5, 2.2 * s);
+    g.save(); g.translate(px, py); g.rotate(T3.shard.ang); g.fillStyle = "rgba(70,72,66,0.55)"; g.strokeStyle = "rgba(50,52,48,0.8)"; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(-L / 2, -w); g.lineTo(L / 2, -w * 0.4); g.lineTo(L / 2 - 1.5 * s, 0); g.lineTo(L / 2, w * 0.5); g.lineTo(-L / 2, w); g.closePath(); g.fill(); g.stroke(); g.restore();
+  }
   const high = T3.z > 3;
   if (high) drawPipette3();                         // размазаната пипета е „зад“ фокусираните сперматозоиди
-  ctx3.save(); spermFocus(ctx3, T3.F, scale3(), T3.obj);
-  for (const sp of T3.sperm) if (!sp.inside) drawFree(sp);
-  ctx3.restore();
-  const cand = insideList().length < T3.load && T3.z <= C3.Z_ASP ? aspCandidate() : null;
+  drawFreeAll3(T3.F);
+  const cand = insideList().length < T3.load ? aspCandidate() : null;
   const near = cand ? cand.s : nearestFree();
   if (near) {
     const c = w2s3(...near.pos); g.beginPath(); g.arc(c[0], c[1], Math.max(10, 9 * s), 0, 2 * Math.PI);
@@ -3291,11 +3428,13 @@ function frame3(now) {
         const dx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), dy = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
         if (dx || dy) { start3(); const n = Math.hypot(dx, dy), v = C3.STAGE_SPEED * k * dt; moveDish3(dx / n * v, dy / n * v); }
         const dz = ((has("q") || T3.holdUp) ? 1 : 0) - ((has("e") || T3.holdDown) ? 1 : 0);
-        if (dz && !(T3.bend && T3.bend.broken > 0)) { start3(); T3.z = Math.max(0, Math.min(C3.Z_MAX, T3.z + dz * C3.Z_SPEED * k * dt)); }
-        bottomPress(T3.bend || (T3.bend = {}), dz < 0 && T3.z < C3.Z_CONTACT, dt,
-                    u => { movePip3(-side3() * u * k, 0); dragHint3(); }, () => breakNeedle3(T3.bend, z => { T3.z = z; }), bendHint3);
+        if (dz) start3();
+        const r3 = bottomMove(T3.bend || (T3.bend = {}), dz * C3.Z_SPEED * k * dt, T3.z <= C3.Z_CONTACT, dt,
+                              u => { movePip3(-side3() * u, 0); if (u > 0 && !T3.bend.bend) dragHint3(); }, () => breakNeedle3(T3.bend, z => { T3.z = z; }), bendHint3);
+        T3.z = Math.max(Math.min(T3.z, C3.Z_CONTACT - 0.01), Math.min(C3.Z_MAX, T3.z + r3));
         const asp = has(" ") || T3.holdAsp, exp = has("b") || T3.holdExp;
         T3.flow = asp && !exp ? 1 : exp && !asp ? -1 : 0;
+        flowRamp3(T3.flow, dt, fine);
         if (T3.flow) start3();
       } else T3.flow = 0;
       sim3(dt, fine);
@@ -3322,7 +3461,7 @@ function sim3(dt, fine) {
         sp.updateFree(dt);
         // иглата е препятствие, ако долният ѝ ръб е по-ниско от сперматозоида (~3 µm): той се удря и се плъзга покрай
         // стъклото; по-високо минава под нея (на фокус е той, иглата е размазана) - 4.9, по шефа
-        if (!sp.inside && underPipette(sp.pos) && needleLow3(sp.pos)) {
+        if (!sp.inside && underPipette(sp.pos) && needleHits3(sp)) {
           const [tx, ty] = tip3(), d = Math.max(0, side3() * (sp.pos[0] - tx)), edge = pipOuter(d) + 2;
           sp.pos = [sp.pos[0], sp.pos[1] >= ty ? ty + edge : ty - edge];
           if (sp.motile && !sp.pin) {                    // завива покрай иглата - по посоката, която е по-близо
@@ -3334,8 +3473,7 @@ function sim3(dt, fine) {
       const b = tip3();
       if (pressed3() && accepts3()) {
         const sd = side3();
-        for (const off of [0, C3.BEVEL_LEN / 2, C3.BEVEL_LEN])
-          checkPress([T3.prevTip[0] + sd * off, T3.prevTip[1]], [b[0] + sd * off, b[1]]);
+        checkPress([T3.prevTip[0], T3.prevTip[1]], [b[0], b[1]]);   // само върхът; тялото на иглата ги бута настрани (11.11)
         for (const sp of T3.sperm) if (sp.pin) T3.bottomDrag = 0;     // при рязането влаченето не се брои
         // на живо върхът не се влачи по дъното при гонене - само кратко движение при рязането
         T3.bottomDrag += Math.hypot(b[0] - T3.prevTip[0], b[1] - T3.prevTip[1]);
@@ -3507,6 +3645,13 @@ function flow4(dt) {
       } else e = 0;
     }
     if (e > 0 && inOoplasm) U.medIn += e;
+    if (e > 0 && !$("stage5").hidden && T3.oil && T3.oil.len > 0) {           // зад средата има олио (засмукано извън капката)
+      const out = oilStep3(-e);
+      if (out > 0 && inOoplasm && !U.oilIn) {
+        U.oilIn = [U.tip[0] - sd4() * 4, U.tip[1]]; penalize(U.pen, "oil_in_oocyte");
+        toast4([T("В ооцита влезе минерално олио!"), T("Това е много лошо: всички точки за клетката се губят.")], "err", 3600);
+      } else if (out > 0 && !inOoplasm) oilDrops3(out, [S5.D[0] + U.tip[0], S5.D[1] + U.tip[1]]);
+    }
   }
 }
 
@@ -3623,6 +3768,11 @@ function drawOocyte4(g, s) {
     dent: U.zona.pierced ? null : { amt: U.zona.dent, ang: U.zona.ang },
     funnel: U.mem.broken ? null : { inv: U.mem.inv, ang: U.mem.ang } });
   if (U.sperm.out && U.sperm.pos) drawSpermAt(g, U.sperm.pos[0], U.sperm.pos[1], sd4(), s, 1, U.sperm.loc === "ooplasm");
+  if (U.oilIn) {                                       // капчица олио в ооцита (11.11): малка сферичка с тъмна стена
+    const [ox, oy] = w2s4(U.oilIn[0], U.oilIn[1]), R = 5 * s;
+    g.beginPath(); g.arc(ox, oy, R, 0, 2 * Math.PI); g.fillStyle = "rgba(235,230,205,0.6)"; g.fill();
+    g.lineWidth = Math.max(1.5, 0.25 * R); g.strokeStyle = "rgba(50,50,44,0.8)"; g.stroke();
+  }
 }
 function drawNeedle4(g, s) {
   // общата игла; размазана, ако не е на височината на фокуса; с цитоплазмата и сперматозоида вътре
@@ -3783,7 +3933,7 @@ function resetPart5() {
   S5.phase = "pvp"; S5.spermInfo = null;
   T3.pen = newPen("s2"); U.pen = newPen("s4"); S5.penO = newPen("s3"); S5.orientDone = false;
   U.zona = { pierced: false, dent: 0, ang: sd4() > 0 ? 0 : Math.PI }; U.mem = { broken: false, inv: 0, asp: 0, ang: U.zona.ang };
-  U.cyto = 0; U.flow = 0; U.medIn = 0; U.sperm = { u: 0, out: false, none: true, loc: null, pos: null };
+  U.cyto = 0; U.flow = 0; U.medIn = 0; U.oilIn = null; U.sperm = { u: 0, out: false, none: true, loc: null, pos: null };
   U.opposite = false; U.damaged = false; U.heightWarn = 0; U.inside = false; U.withdrawn = false; U.holdAsp = U.holdExp = false;
   S5.injPrev = null; S5.prevN = [...S5.N]; S5.driftWarn = 0; S5.poly = false;
   if (S5.session) S5.session.lap = S5.session.t;
@@ -3820,7 +3970,7 @@ function queueStep5(delta) {
   }
 }
 function newCell5() {
-  S5.F = 0;                                              // започва в PVP: фокусът на дъното
+  T3.shard = null; T3.oilDrops = []; T3.oil = null; S5.F = 0; S5.obj = 0;                                  // 11.11: на 4x се виждат и двете капки                                              // започва в PVP: фокусът на дъното
   // ново упражнение: цялото блюдо отначало
   stopAutoNext("s5");
   S5.n = CNT.s5;
@@ -3912,6 +4062,7 @@ function holdStep5(dt) {
     const k = Math.min(1, dt * 6); o.oo = [o.oo[0] - ov[0] * k, o.oo[1] - ov[1] * k];
     if (d < 1) {
       S5.heldCell = o; S5.held = true; U.cell = o.cell;
+      if (o.findT == null) o.findT = S5.session.t - (S5.session.lap || 0);      // време до намирането (11.11)
       toast5([T("Ооцитът е хванат. Вдигни иглата до екватора (около 78 µm) и инжектирай.")], "info", 2600);
     }
   } else if (d < C5.CAPTURE * 4 && performance.now() - (S5.capWarn || 0) > 3000) {
@@ -4007,7 +4158,7 @@ function check5() {
   const sp = penScore(T3.pen, false), ori = penScore(S5.penO, false), inj = penScore(U.pen, false), cell = cellScore5(false);
   const o = S5.heldCell; o.done = true; o.doneIndex = S5.results.length + 1;
   const t = S5.session.t - (S5.session.lap || 0);
-  S5.results.push({ n: o.doneIndex, t, ok: t <= lim(5), done: true, practice: GAME.practice, score: cell, sp, ori, inj, poly: S5.poly });
+  S5.results.push({ n: o.doneIndex, t, ok: t <= lim(5), done: true, practice: GAME.practice, score: cell, sp, ori, inj, poly: S5.poly, find: o.findT });
   release5();
   showLastCheck("lastCheck5", [S5.poly ? T`Клетка ${o.doneIndex} от ${S5.n} е завършена, но с 0 точки.` : T`Правилно! Клетка ${o.doneIndex} от ${S5.n} е готова.`, ...notes5], !S5.poly);
   if (S5.results.length >= S5.n) { S5.session.state = "done"; $("toast5").hidden = true; showReport5(false); }
@@ -4036,6 +4187,8 @@ function showReport5(expired) {
     ? T`<p>Упражнение: ${S5.results.length} от ${S5.n} клетки за ${S5.session.t.toFixed(1)} s.</p>`
     : T`<table class="report"><thead><tr><th>Клетка</th><th>Време</th><th>Сперм. ${Math.round(ws * 100)}%</th><th>Ориент. ${Math.round(wo * 100)}%</th><th>Инж. ${Math.round(wi * 100)}%</th><th>Общо</th></tr></thead>
        <tbody>${rows.join("")}</tbody></table><p><b>${avgLine(S5.results, S5.n)}</b></p>`;
+  const fs = S5.results.filter(r => r.find != null).map(r => r.find);
+  if (fs.length) $("res5Body").innerHTML += `<p>${T`Намиране на ооцита: средно ${(fs.reduce((a, b) => a + b, 0) / fs.length).toFixed(1)} s (от ${Math.min(...fs).toFixed(1)} до ${Math.max(...fs).toFixed(1)} s)`}</p>`;
   $("result5").hidden = false;
 }
 function ui5() {
@@ -4095,9 +4248,7 @@ function draw5() {
   // сперматозоидите (рисува ги етап 2 в нашата картина)
   const keep = [ctx3, W3, H3, T3.obj, [...T3.cam]];
   ctx3 = g; W3 = W5; H3 = H5; T3.obj = S5.obj; T3.cam = [...S5.D];
-  ctx3.save(); spermFocus(ctx3, T3.F, scale3(), T3.obj);
-  for (const sp of T3.sperm) if (!sp.inside) drawFree(sp);
-  ctx3.restore();
+  drawFreeAll3(S5.F ?? 0);
   [ctx3, W3, H3, T3.obj] = keep; T3.cam = keep[4];
   // holding пипетата и ооцитът (рисува ги етап 4, отместено в изгледа)
   const keep4 = [ctx4, W4, H4, U.obj, [...OFF4], FOCUS4, [...U.tip], U.z];
@@ -4217,14 +4368,16 @@ function frame5(now) {
       const dx = (has("d") ? 1 : 0) - (has("a") ? 1 : 0), dy = (has("s") ? 1 : 0) - (has("w") ? 1 : 0);
       if (dx || dy) { const n = Math.hypot(dx, dy); moveDish5(dx / n * C5.STAGE_SPEED * fine * dt, dy / n * C5.STAGE_SPEED * fine * dt); }
       const dz = ((has("q") || has("u") || S5.holdUp) ? 1 : 0) - ((has("e") || has("o") || S5.holdDown) ? 1 : 0);
-      if (dz && !(S5.bend && S5.bend.broken > 0)) { start5(); S5.Z = Math.max(0, Math.min(C5.Z_MAX, S5.Z + dz * C4.Z_SPEED * fine * dt)); }
-      bottomPress(S5.bend || (S5.bend = {}), dz < 0 && S5.Z < C3.Z_CONTACT, dt,
-                  u => { moveNeedle5(-sd4() * u * fine, 0); dragHint3(); }, () => breakNeedle3(S5.bend, z => { S5.Z = z; }), bendHint3);
+      if (dz) start5();
+      const r5 = bottomMove(S5.bend || (S5.bend = {}), dz * C4.Z_SPEED * fine * dt, S5.Z <= C3.Z_CONTACT, dt,
+                            u => { moveNeedle5(-sd4() * u, 0); if (u > 0 && !S5.bend.bend) dragHint3(); }, () => breakNeedle3(S5.bend, z => { S5.Z = z; }), bendHint3);
+      S5.Z = Math.max(Math.min(S5.Z, C3.Z_CONTACT - 0.01), Math.min(C5.Z_MAX, S5.Z + r5));
     }
     const asp = keys5.has(" ") || S5.holdAsp, exp = keys5.has("b") || S5.holdExp;
     // сперматозоидите в PVP (етап 2)
     T3.cam = [...S5.D]; T3.off = [...S5.N]; T3.z = S5.Z; T3.paused = S5.paused;
     T3.flow = S5.phase === "pvp" && accepts5() ? (asp && !exp ? 1 : exp && !asp ? -1 : 0) : 0;
+    flowRamp3(T3.flow, dt, fine < 1);
     if (T3.flow) start5();
     if (!S5.paused) sim3(dt, fine < 1);
     if (events3.length) { const [lines, kind] = events3[events3.length - 1]; toast5(lines, kind); events3 = []; }
@@ -4541,7 +4694,7 @@ function Q1open() { Q.paused = true; $("help1").hidden = false; $("help1Close").
 function Q1close() { $("help1").hidden = true; Q.paused = false; }
 $("help1Close").onclick = () => Q1close();
 // „Какво ново“: от бутона в менюто; при първо отваряне на нова версия се показва веднъж само (4.9)
-const NEWS_VER = "4.9 (30.10)";                          // сменя се при всяко допълване - прозорецът се показва пак веднъж
+const NEWS_VER = "4.9 (12.11)";                          // сменя се при всяко допълване - прозорецът се показва пак веднъж
 function newsOpen() { $("news").hidden = false; $("newsClose").focus(); }
 function newsClose() { $("news").hidden = true; try { localStorage.setItem("icsi_news", NEWS_VER); } catch (e) { /* няма достъп */ } }
 $("menuNews").onclick = newsOpen; $("newsClose").onclick = newsClose;
@@ -4669,6 +4822,174 @@ function parseIni(text) {
   }
   return out;
 }
+// ===================== РЕЖИМ „ДЕМОНСТРАЦИЯ“ (4.9, 12.11) =====================
+// Втори прозорец (проектор, телевизор): голямата картина от микроскопа + етап, стъпка, защо и грешки. Изключен е,
+// докато не се натисне бутонът в менюто ([demo] enabled = no го скрива). Всичко се рисува в едно платно, затова
+// записаният филм (само тук) е същият като екрана. Прозорецът е празен (about:blank) и се управлява от симулатора -
+// така работи и когато симулаторът е отворен като файл.
+const DEMO = { win: null, cv: null, g: null, scale: 1, base: 1, msg: null, rec: null, chunks: [], recT0: 0, raf: 0 };
+try { const v = parseFloat(localStorage.getItem("icsi_demo_scale")); if (v > 0) DEMO.scale = v; } catch (e) { /* няма достъп */ }
+const demoStageName = () => { const m = document.querySelector("main.stagegrid:not([hidden])"); return m ? m.id : null; };
+function demoStep() {
+  const id = demoStageName();
+  if (id === "stage5") {
+    const where = $("w5Where").textContent;
+    return S5.phase === "pvp" ? T`Сперматозоид: намиране, обездвижване и засмукване (капка ${where})` : T`Ооцит: ориентиране, хващане и инжектиране (капка ${where})`;
+  }
+  return { stage1: T("Преценка на ооцитите"), stage3: T("Сперматозоидът: обездвижване и засмукване"), stage2: T("Ориентиране на ооцита"), stage4: T("Инжектиране") }[id] || "";
+}
+function demoInfo() {
+  const m = document.querySelector("main.stagegrid:not([hidden])");
+  if (!m) return null;
+  const txt = el => el ? el.innerText.trim() : "";
+  const toast = m.querySelector(".toast:not([hidden])");
+  if (toast) {
+    const lines = [...toast.children].map(d => d.innerText.trim()).filter(Boolean);
+    const kind = /\b(warn|info|ok)\b/.exec(toast.className)?.[1] || "err";
+    if (lines.length && (!DEMO.msg || DEMO.msg.lines.join("|") !== lines.join("|"))) DEMO.msg = { lines, kind, t: performance.now() };
+    else if (DEMO.msg) DEMO.msg.t = performance.now();
+  }
+  if (DEMO.msg && performance.now() - DEMO.msg.t > 12000) DEMO.msg = null;    // съобщението стои 12 s на големия екран
+  const roll = $("rollHint");
+  const errs = [...m.querySelectorAll("ul.errs li:not(.empty)")].map(li => li.innerText.trim().replace(/\s*\n\s*/g, " ")).filter(Boolean);
+  const res = m.querySelector(".result:not([hidden]) .card");
+  const last = m.querySelector(".lastcheck:not([hidden])");
+  return {
+    canvas: m.querySelector("canvas"), title: txt(m.querySelector(".stage-title")).replace(/\s*·\s*(версия|version)\s*[\d.]+.*$/i, ""), step: demoStep(),
+    roll: m.id === "stage2" && roll && !roll.hidden ? txt(roll) : "",
+    timer: txt(m.querySelector(".timer")), score: txt(m.querySelector(".score")),
+    errs, result: res ? txt(res).replace(/\n{2,}/g, "\n").split("\n").filter(l => l && !/^(Ново упражнение|New exercise)/.test(l)).slice(0, 6) : null,
+    last: last ? txt(last).split("\n").filter(Boolean).slice(0, 4) : null,
+  };
+}
+function demoWrap(g, text, maxW) {
+  const out = [];
+  for (const para of String(text).split("\n")) {
+    let line = "";
+    for (const w of para.split(/\s+/)) {
+      const t = line ? line + " " + w : w;
+      if (g.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+    }
+    out.push(line);
+  }
+  return out;
+}
+function demoDraw() {
+  const w = DEMO.win;
+  if (!w || w.closed) { demoClosed(); return; }
+  DEMO.raf = w.requestAnimationFrame(demoDraw);
+  const dpr = w.devicePixelRatio || 1, W = w.innerWidth, H = w.innerHeight, cv = DEMO.cv;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = DEMO.g; g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.fillStyle = "#101112"; g.fillRect(0, 0, W, H);
+  // размер на текста: според прозореца (проектор или телевизор) × A-/A+ × [demo] text_scale
+  const fs = Math.max(11, Math.min(W / 62, H / 34) * DEMO.scale * DEMO.base);
+  const info = demoInfo(), font = (k, wgt) => `${wgt || 400} ${Math.round(fs * k)}px "IBM Plex Sans", system-ui, sans-serif`;
+  const land = W / H > 1.15, pad = Math.round(fs * 0.8);
+  const panelW = land ? Math.max(W * 0.3, Math.min(W * 0.42, fs * 22)) : W;
+  const vx = 0, vy = 0, vw = land ? W - panelW : W, vh = land ? H : H * 0.6;
+  if (!info) {
+    g.fillStyle = "#e9e8e3"; g.font = font(1.6, 600); g.textAlign = "center";
+    g.fillText(T("ICSI симулатор: демонстрация"), W / 2, H / 2 - fs);
+    g.font = font(1); g.fillStyle = "#a8a7a1"; g.fillText(T("Избери етап в симулатора – тук ще се вижда микроскопът."), W / 2, H / 2 + fs);
+    g.textAlign = "left"; demoRecMark(g, W, fs); return;
+  }
+  const src = info.canvas;
+  if (src && src.width && src.height) {
+    const k = Math.min(vw / src.width, vh / src.height), dw = src.width * k, dh = src.height * k;
+    g.imageSmoothingEnabled = true; g.drawImage(src, vx + (vw - dw) / 2, vy + (vh - dh) / 2, dw, dh);
+  }
+  // панел: етап, стъпка, защо, грешки
+  let x = land ? W - panelW + pad : pad, y = land ? pad : vh + pad;
+  const maxW = (land ? panelW : W) - 2 * pad, bottom = H - pad;
+  const put = (text, k, col, wgt, gap) => {
+    if (!text) return; g.font = font(k, wgt); g.fillStyle = col;
+    for (const l of demoWrap(g, text, maxW)) { if (y + fs * k > bottom) return; y += fs * k * 1.25; g.fillText(l, x, y); }
+    y += fs * (gap ?? 0.5);
+  };
+  const head = t => put(t.toUpperCase(), 0.72, "#8f8e88", 600, 0.15);
+  if (land) { g.fillStyle = "#17191a"; g.fillRect(W - panelW, 0, panelW, H); }
+  head(T("Етап")); put(info.title, 1.05, "#e9e8e3", 600, 0.6);
+  head(T("Стъпка")); put(info.step, 1.05, "#e9e8e3", 500, 0.6);
+  if (info.timer) { put(info.timer + (info.score ? "   ·   " + info.score.split("\n")[0] : ""), 1.25, "#7fd6c8", 600, 0.7); }
+  const col = { err: "#ff8a7a", warn: "#ffc46b", info: "#9cc9ff", ok: "#8fdc9c" };
+  if (info.result) { head(T("Резултат")); info.result.forEach((l, i) => put(l, i ? 0.95 : 1.15, i ? "#e9e8e3" : "#8fdc9c", i ? 400 : 600, 0.2)); y += fs * 0.4; }
+  if (DEMO.msg) {
+    head(DEMO.msg.kind === "err" ? T("Грешка") : T("Какво става и защо"));
+    put(DEMO.msg.lines[0], 1.1, col[DEMO.msg.kind] || col.info, 600, 0.2);
+    DEMO.msg.lines.slice(1).forEach(l => put(l, 1.0, "#e9e8e3", 400, 0.2)); y += fs * 0.4;
+  }
+  if (info.roll) { head(T("Телце, фокус")); put(info.roll, 0.95, "#e9e8e3", 400, 0.6); }
+  if (info.last) { head(T("Последна проверка")); info.last.forEach(l => put(l, 0.9, "#e9e8e3", 400, 0.15)); y += fs * 0.4; }
+  if (info.errs.length) { head(T("Грешки")); info.errs.slice(-6).forEach(l => put("• " + l, 0.9, col.err, 400, 0.1)); }
+  demoRecMark(g, W, fs);
+}
+function demoRecMark(g, W, fs) {
+  if (!DEMO.rec) return;
+  const t = (performance.now() - DEMO.recT0) / 1000, mm = Math.floor(t / 60), ss = String(Math.floor(t % 60)).padStart(2, "0");
+  g.fillStyle = "rgba(0,0,0,0.55)"; g.fillRect(8, 8, fs * 6.2, fs * 1.8);
+  g.fillStyle = Math.floor(t * 2) % 2 ? "#ff4d4d" : "#b02a2a"; g.beginPath(); g.arc(8 + fs * 0.9, 8 + fs * 0.9, fs * 0.38, 0, 2 * Math.PI); g.fill();
+  g.fillStyle = "#fff"; g.font = `600 ${Math.round(fs)}px "IBM Plex Sans", system-ui, sans-serif`; g.fillText(`REC ${mm}:${ss}`, 8 + fs * 1.6, 8 + fs * 1.25);
+}
+function demoOpen() {
+  if (DEMO.win && !DEMO.win.closed) { DEMO.win.focus(); return; }
+  const w = window.open("", "icsi_demo", "popup=yes,width=1280,height=760");
+  if (!w) { alert(T("Прозорецът не се отвори: разреши изскачащите прозорци за симулатора и опитай пак.")); return; }
+  DEMO.win = w;
+  const d = w.document;
+  d.open(); d.write(`<!doctype html><html lang="${I18N.lang}"><head><meta charset="utf-8"><base href="${location.href.replace(/[#?].*$/, "")}">
+<title>${T("ICSI симулатор: демонстрация")}</title><link href="fonts/fonts.css" rel="stylesheet"><style>
+html,body{margin:0;height:100%;background:#101112;overflow:hidden;font-family:"IBM Plex Sans",system-ui,sans-serif}
+canvas{display:block;width:100vw;height:100vh}
+#bar{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(30,32,33,.92);color:#e9e8e3;font-size:14px;transition:opacity .4s}
+#bar.hide{opacity:0;pointer-events:none}
+#bar button{font:inherit;color:inherit;background:#2c2f30;border:1px solid #474a4b;border-radius:7px;padding:6px 11px;cursor:pointer}
+#bar button:hover{background:#3a3e3f} #bar .on{background:#8a1f1f;border-color:#c04040} #bar output{min-width:48px;text-align:center}
+</style></head><body><canvas id="c"></canvas><div id="bar">
+<button id="aM" title="${T("По-малък текст")}">A−</button><output id="aV"></output><button id="aP" title="${T("По-голям текст")}">A+</button>
+<button id="rec">● ${T("Запис на филм")}</button><button id="fs">${T("Цял екран")}</button></div></body></html>`);
+  d.close();
+  DEMO.cv = d.getElementById("c"); DEMO.g = DEMO.cv.getContext("2d");
+  const bar = d.getElementById("bar"), showVal = () => { d.getElementById("aV").textContent = Math.round(DEMO.scale * 100) + "%"; };
+  const setScale = k => { DEMO.scale = Math.max(0.5, Math.min(3, Math.round((DEMO.scale * k) * 20) / 20)); showVal(); try { localStorage.setItem("icsi_demo_scale", DEMO.scale); } catch (e) { /* няма достъп */ } };
+  d.getElementById("aM").onclick = () => setScale(1 / 1.1); d.getElementById("aP").onclick = () => setScale(1.1);
+  d.getElementById("fs").onclick = () => { d.fullscreenElement ? d.exitFullscreen() : d.documentElement.requestFullscreen?.(); };
+  d.getElementById("rec").onclick = () => demoRecToggle();
+  w.addEventListener("keydown", e => { if (e.key === "+" || e.key === "=") setScale(1.1); else if (e.key === "-") setScale(1 / 1.1); });
+  let hideT = 0; const wake = () => { bar.classList.remove("hide"); clearTimeout(hideT); hideT = setTimeout(() => bar.classList.add("hide"), 3000); };
+  w.addEventListener("mousemove", wake); wake();
+  w.addEventListener("pagehide", () => demoClosed());
+  showVal(); $("menuDemo").classList.add("on"); $("menuDemo").textContent = T("Демонстрация: отворена");
+  DEMO.raf = w.requestAnimationFrame(demoDraw);
+}
+function demoClosed() {
+  if (DEMO.rec) try { DEMO.rec.stop(); } catch (e) { /* вече спрян */ }
+  DEMO.win = null; $("menuDemo").classList.remove("on"); $("menuDemo").textContent = T("Демонстрация");
+}
+// запис на филм: само в демонстрацията; mp4 където браузърът може (Chrome, Safari), иначе webm
+function demoRecToggle() {
+  const d = DEMO.win.document, btn = d.getElementById("rec");
+  if (DEMO.rec) { DEMO.rec.stop(); return; }
+  if (!DEMO.cv.captureStream || !window.MediaRecorder) { alert(T("Този браузър не може да записва филм. Опитай с Chrome, Edge или Safari.")); return; }
+  const types = ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9", "video/webm"];
+  const mime = types.find(t => MediaRecorder.isTypeSupported(t)) || "";
+  const rec = new MediaRecorder(DEMO.cv.captureStream(30), mime ? { mimeType: mime, videoBitsPerSecond: 6e6 } : {});
+  DEMO.chunks = [];
+  rec.ondataavailable = e => { if (e.data && e.data.size) DEMO.chunks.push(e.data); };
+  rec.onstop = () => {
+    DEMO.rec = null; if (DEMO.win && !DEMO.win.closed) { btn.classList.remove("on"); btn.textContent = "● " + T("Запис на филм"); }
+    if (!DEMO.chunks.length) return;
+    const type = rec.mimeType || mime || "video/webm", ext = /mp4/.test(type) ? "mp4" : "webm";
+    const blob = new Blob(DEMO.chunks, { type }), url = URL.createObjectURL(blob), a = document.createElement("a");
+    const n = new Date(), p2 = v => String(v).padStart(2, "0");
+    a.href = url; a.download = `ICSI_demo_${n.getFullYear()}-${p2(n.getMonth() + 1)}-${p2(n.getDate())}_${p2(n.getHours())}-${p2(n.getMinutes())}.${ext}`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000);
+  };
+  rec.start(1000); DEMO.rec = rec; DEMO.recT0 = performance.now();
+  btn.classList.add("on"); btn.textContent = "■ " + T("Спри и свали филма");
+}
+$("menuDemo").onclick = demoOpen;
+window.addEventListener("beforeunload", () => { if (DEMO.win && !DEMO.win.closed) DEMO.win.close(); });
 function applyRules(r) {
   const num = (sec, key, lo, hi, cur) => {
     const v = parseFloat(((r[sec] || {})[key] ?? ""));
@@ -4681,6 +5002,8 @@ function applyRules(r) {
   cn("stage4", "oocytes", "s4"); cn("stage5", "oocytes", "s5"); cn("stage5", "sperm", "s5sperm");
   AUTO_NEXT_S = num("general", "auto_next_s", 0, 30, AUTO_NEXT_S);
   C3.SPEED = [num("stage2", "sperm_speed_min", 0, 100, C3.SPEED[0]), num("stage2", "sperm_speed_max", 0, 100, C3.SPEED[1])];
+  C3.DEPTH = num("stage2", "drop_depth_um", 20, 300, C3.DEPTH);
+  C3.BOTTOM_SHARE = num("stage2", "bottom_share", 0, 1, C3.BOTTOM_SHARE);
   C3.NORMAL_SHARE = num("stage2", "normal_share", 0, 1, C3.NORMAL_SHARE);
   C3.IMMOTILE = num("stage2", "immotile_share", 0, 1, C3.IMMOTILE);
   C3.IMMOB_ZONE = [num("stage2", "immob_from", 0, 1, C3.IMMOB_ZONE[0]), num("stage2", "immob_to", 0, 1, C3.IMMOB_ZONE[1])];
@@ -4691,6 +5014,8 @@ function applyRules(r) {
   C3.HEAD_MIN = num("stage2", "head_min_um", 0, 500, C3.HEAD_MIN);
   C3.HEAD_MAX = num("stage2", "head_max_um", 0, 500, C3.HEAD_MAX);
   ORIENT_TOL_H = num("stage3", "orient_tol_h", 0.05, 6, ORIENT_TOL_H);
+  DEMO.base = num("demo", "text_scale", 0.5, 3, DEMO.base);                               // [demo] text_scale
+  { const v = (r.demo || {}).enabled; if (v != null) $("menuDemo").hidden = !/^(yes|да|1|true|on)$/i.test(String(v).trim()); }
   TILT_TOL = num("stage3", "tilt_tol_deg", 1, 90, TILT_TOL);
   Z2_TOL = num("stage3", "equator_tol_um", 1, 100, Z2_TOL);
   CAPTURE = num("stage3", "capture_um", 5, 200, CAPTURE);
